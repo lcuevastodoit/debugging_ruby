@@ -1,3 +1,8 @@
 .vscode
 ruby/.vscode
 rails_demo/.vscode
+rails_app/tmp
+rails_app/test
+rails_app/.github
+rails_app/log
+rails_app/.kamal
