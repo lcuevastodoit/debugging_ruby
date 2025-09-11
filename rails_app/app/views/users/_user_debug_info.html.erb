@@ -1,0 +1,14 @@
+<div class="text-xs text-gray-400 mt-1">
+  <%
+    # Problema intencional para debugging en parcial
+    debugger if Rails.env.development? && params[:debug_partial]
+
+    debug_info = {
+      id: user.id,
+      created: time_ago_in_words(user.created_at),
+      posts_count: user.posts.count,
+      active: user.active?
+    }
+  %>
+  Debug: <%= debug_info.inspect %>
+</div>

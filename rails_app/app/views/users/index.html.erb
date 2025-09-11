@@ -1,0 +1,25 @@
+<div class="bg-white rounded-lg shadow p-6">
+  <h1 class="text-2xl font-bold mb-4">Users</h1>
+
+  <%= link_to "New User", new_user_path, class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 inline-block" %>
+
+  <div class="grid gap-4">
+    <% @users.each do |user| %>
+      <div class="border rounded p-4 hover:bg-gray-50">
+        <h3 class="font-semibold"><%= user.name %></h3>
+        <p class="text-gray-600"><%= user.email %></p>
+        <p class="text-sm text-gray-500"><%= user_posts_summary(user) %></p>
+
+        <!-- Problema intencional para debugging en parcial -->
+        <%= render 'user_debug_info', user: user %>
+
+        <div class="mt-2">
+          <%= link_to "View", user_path(user), class: "text-blue-600 hover:underline mr-2" %>
+          <%= link_to "Edit", edit_user_path(user), class: "text-yellow-600 hover:underline mr-2" %>
+          <%= link_to "Delete", user_path(user), method: :delete,
+                      confirm: "Are you sure?", class: "text-red-600 hover:underline" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
