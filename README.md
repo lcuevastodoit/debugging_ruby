@@ -14,15 +14,41 @@ This repository is for educational purposes and follows open-source principles.
 
 _____
 
-# Ejercicio de Ruby Debugging gamificados
-## Propósito
+## 1. Ejercicio de Ruby Debugging gamificados
+### Propósito
 Este repositorio contiene ejercicios y juegos diseñados para practicar técnicas avanzadas de depuración en Ruby usando Pry, IRB, debug o byebug. Cada escenario simula situaciones donde debes inspeccionar, modificar y corregir el estado de objetos y procesos mediante comandos de depuración, sin depender de frameworks externos.
 
-## Cómo usar
+### Cómo usar
 - Inicia una sesión de Pry o IRB en tu terminal.
 - Carga el archivo principal del ejercicio: `load 'pry/santuario_custodios.rb'` o el que corresponda.
 - Utiliza los comandos recomendados en el prompt e.g. (`watch`, `cd`, `ls`, `show-method`, `whereami`, etc.) para inspeccionar y manipular los objetos.
 - El objetivo es restaurar el equilibrio, descifrar mensajes o corregir bugs usando la menor cantidad de llamadas y siguiendo buenas prácticas de depuración.
 
-## Licencia
+### Licencia
 Este repositorio es para fines educativos y sigue principios de código abierto.
+
+## 2. RAILS DEBUGGING APP
+### Propósito
+Este repositorio contiene una aplicación Rails configurada para practicar técnicas de depuración en un entorno web. Incluye middleware personalizado para manejar errores y facilitar la depuración de vistas parciales, así como configuraciones específicas para el entorno de desarrollo.
+
+### URLs de prueba disponibles:
+
+http://localhost:3000 - Lista de usuarios
+http://localhost:3000/users/1 - Detalle de usuario
+http://localhost:3000/debug_error - Para probar manejo de errores
+http://localhost:3000/users?debug_partial=true - Para debugging en parciales
+
+### Preparación Inicial
+1. Clonar o crear la aplicación
+cd debugging_demo
+
+2. Instalar dependencias
+bundle install
+
+3. Ejecutar setup de base de datos
+rails db:create db:migrate db:seed
+
+4. Iniciar servidor en una terminal
+rails server
+
+5. Abrir otra terminal para comandos adicionales
