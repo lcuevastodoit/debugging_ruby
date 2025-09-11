@@ -6,5 +6,4 @@ rails_app/test
 rails_app/.github
 rails_app/log
 rails_app/.kamal
-rails_app/storage/development.sqlite3-shm
-rails_app/storage/development.sqlite3-wal
+rails_app/storage
