@@ -1,0 +1,5 @@
+/* This is a test file to ensure Tailwind CSS is being processed correctly */
+/* Standard Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

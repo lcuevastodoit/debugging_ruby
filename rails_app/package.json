@@ -1,0 +1,25 @@
+{
+  "name": "rails-debugging-demo",
+  "private": true,
+  "dependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.4",
+    "@tailwindcss/typography": "^0.5.9",
+    "autoprefixer": "10.4.14",
+    "postcss": "8.4.24",
+    "postcss-import": "15.1.0",
+    "tailwindcss": "3.3.2"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.tailwind.css --minify",
+    "dev:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.tailwind.css --watch",
+    "postinstall": "yarn build:css",
+    "check": "tailwindcss --help"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "resolutions": {
+    "tailwindcss": "3.3.2"
+  }
+}

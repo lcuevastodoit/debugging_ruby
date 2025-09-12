@@ -7,3 +7,11 @@ rails_app/.github
 rails_app/log
 rails_app/.kamal
 rails_app/storage
+rails_app/node_modules
+rails_app/app/assets/builds
+rails_app/yarn-error.log
+rails_app/.yarn-integrity
+rails_app/public/assets
+.DS_Store
+*.swp
+*.swo

@@ -13,4 +13,11 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
+# Create a Procfile.dev for foreman to manage both Rails and Tailwind processes
+cat > Procfile.dev << EOL
+web: rails server -b 0.0.0.0 -p \${PORT:-3000}
+css: bin/tailwindcss
+EOL
+
+# Use foreman to start both processes
 exec foreman start -f Procfile.dev "$@"

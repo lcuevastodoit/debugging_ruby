@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ This file contains the required Tailwind directives for the styles to work.
+ Custom styles can be added below.
+*/
+
+/* Basic styles - no @apply to avoid processing errors */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.btn-secondary {
+  background-color: #c026d3;
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: #a21caf;
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+.btn-success {
+  background-color: #16a34a;
+  color: white;
+}
+.btn-success:hover {
+  background-color: #15803d;
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.input {
+  border: 0;
+  border-bottom-width: 2px;
+  border-color: #d1d5db;
+  background-color: transparent;
+  padding: 0;
+  padding-bottom: 0.25rem;
+  width: 100%;
+  transition-property: border-color;
+  transition-duration: 200ms;
+}
+.input:focus {
+  border-color: #4f46e5;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Gradient utility classes */
+.gradient-header {
+  background: linear-gradient(to right, #4f46e5, #7e22ce, #db2777);
+}
+
+/* Custom scrollbar styles with web-safe values */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #818cf8 #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #818cf8;
+  border-radius: 3px;
+}
