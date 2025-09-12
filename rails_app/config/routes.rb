@@ -5,6 +5,8 @@ Rails.application.routes.draw do
     resources :posts
   end
 
+  resources :users
+
   get 'debug_error', to: 'users#index', defaults: { debug: 'error' }
 
   get "up" => "rails/health#show", as: :rails_health_check

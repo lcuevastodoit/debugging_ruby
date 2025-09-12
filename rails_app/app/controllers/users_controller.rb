@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :set_user, only: [:show, :update, :destroy]
 
   def index
     @users = User.includes(:posts).all
@@ -35,20 +35,24 @@ class UsersController < ApplicationController
     end
   end
 
-  def edit
-  end
-
   def update
-    if @user.update(user_params)
-      redirect_to @user, notice: 'User updated successfully'
-    else
-      render :edit
+    respond_to do |format|
+      if @user.update(user_params)
+        format.html { redirect_to users_path, notice: 'User was successfully updated.' }
+        format.js { render json: { status: 'success', message: 'User updated successfully' } }
+      else
+        format.html { render :show }
+        format.js { render json: { status: 'error', errors: @user.errors.full_messages } }
+      end
     end
   end
 
   def destroy
     @user.destroy
-    redirect_to users_path, notice: 'User deleted successfully'
+    respond_to do |format|
+      format.html { redirect_to users_path, notice: 'User was successfully deleted.' }
+      format.js { render json: { status: 'success', message: 'User deleted successfully' } }
+    end
   end
 
   private

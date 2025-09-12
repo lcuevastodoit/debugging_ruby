@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_23_000001) do
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -27,7 +27,9 @@ ActiveRecord::Schema[8.0].define(version: 2) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "role", default: "user", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["role"], name: "index_users_on_role"
   end
 
   add_foreign_key "posts", "users"

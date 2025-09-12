@@ -1,0 +1,25 @@
+<%# Inline form partial for user editing %>
+<%= form_with model: user, local: false, html: { 
+  class: "grid grid-cols-3 items-center border-t py-4 px-4 #{row_class} hover:bg-gray-100",
+  data: { remote: true, user_id: user.id }
+} do |form| %>
+  <div class="flex items-center">
+    <%= form.text_field :name, class: "border-b border-gray-300 px-0 bg-transparent", placeholder: "Enter name" %>
+  </div>
+  <div>
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+      </svg>
+      <%= form.email_field :email, class: "border-b border-gray-300 px-0 bg-transparent", placeholder: "Enter email" %>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <%= form.select :role, options_for_select([['User', 'user'], ['Admin', 'admin']], user.role), {}, { class: "border border-gray-300 rounded p-1 bg-white" } %>
+    <div>
+      <%= form.submit "Save", class: "bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600" %>
+      <%= button_to "Delete", user_path(user), method: :delete, remote: true, confirm: "Are you sure?", class: "bg-red-500 text-white px-4 py-1 rounded ml-2 hover:bg-red-600" %>
+    </div>
+  </div>
+<% end %>
