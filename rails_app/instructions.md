@@ -233,6 +233,9 @@ user_stats:
 - [ ] Background jobs para procesamiento de logs grandes
 - [ ] Interfaz reactiva completa con Turbo Streams
 
+## IA tips
+-  Puedes usar comandos como curl, cat, ls, Rails.runner, ruby, irb, pry y otros desde el terminal para ir confirmando el estado y progreso de los cambios.
+
 ---
 
 ## 📚 Recursos Adicionales

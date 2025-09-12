@@ -1,5 +1,16 @@
 Rails.application.routes.draw do
-  root 'users#index'
+  resources :debugging_game, only: [:index] do
+    collection do
+      post :reset
+      post :start_monitoring
+      post :stop_monitoring
+      get :objective, to: 'debugging_game#show'
+      get :live_status
+      post :get_hint
+    end
+  end
+  
+  root 'debugging_game#index'
 
   resources :users do
     resources :posts

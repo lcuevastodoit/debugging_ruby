@@ -10,7 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_23_000001) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_12_173951) do
+  create_table "game_progresses", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "current_level", default: "rookie", null: false
+    t.integer "total_points", default: 0, null: false
+    t.text "objectives_completed", default: "[]"
+    t.integer "current_streak", default: 0, null: false
+    t.integer "longest_streak", default: 0, null: false
+    t.integer "hints_used", default: 0, null: false
+    t.integer "resets_count", default: 0, null: false
+    t.datetime "last_played_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["current_level"], name: "index_game_progresses_on_current_level"
+    t.index ["total_points"], name: "index_game_progresses_on_total_points"
+    t.index ["user_id"], name: "index_game_progresses_on_user_id"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -32,5 +49,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_23_000001) do
     t.index ["role"], name: "index_users_on_role"
   end
 
+  add_foreign_key "game_progresses", "users"
   add_foreign_key "posts", "users"
 end

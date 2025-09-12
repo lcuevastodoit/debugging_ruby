@@ -1,0 +1,259 @@
+<div class="container mx-auto px-4 py-8" data-controller="live-updates" data-live-updates-poll-interval-value="3000">
+  <%= turbo_stream_from "user_#{@current_user.id}_progress" %>
+  <%= turbo_stream_from "user_#{@current_user.id}_notifications" %>
+  
+  <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">
+    🎮 Rails Debugging Game
+  </h1>
+  
+  <!-- Live Notifications -->
+  <div id="notifications" class="mb-6"></div>
+  
+  <!-- Live Status -->
+  <div id="live_status" class="mb-6">
+    <%= render 'live_status', game_progress: @game_progress %>
+  
+  <!-- Game Controls -->
+  <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">🎛️ Game Controls</h3>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-4">
+        <div id="monitoring_status" class="text-gray-600 font-medium">
+          Monitoring Stopped 🔴
+        </div>
+        <%= button_to "Start Monitoring", start_monitoring_debugging_game_index_path, 
+            method: :post, 
+            class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded",
+            form: { data: { turbo_method: :post } } %>
+        <%= button_to "Stop Monitoring", stop_monitoring_debugging_game_index_path, 
+            method: :post, 
+            class: "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded",
+            form: { data: { turbo_method: :post } } %>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button data-action="click->live-updates#refresh" 
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+          🔄 Refresh
+        </button>
+        <button data-action="click->live-updates#togglePolling"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+          ⏸️ Pause Updates
+        </button>
+      </div>
+    </div>
+  </div>
+    </div>
+
+    <!-- Monitoring Controls -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-800">Log Monitoring</h3>
+          <p class="text-gray-600">Monitor Pry, IRB, debug, and byebug commands</p>
+        </div>
+        <div class="flex space-x-4">
+          <%= button_to "Start Monitoring", start_monitoring_debugging_game_index_path, 
+              method: :post, 
+              class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded",
+              data: { turbo_stream: true } %>
+          <%= button_to "Stop Monitoring", stop_monitoring_debugging_game_index_path, 
+              method: :post, 
+              class: "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded",
+              data: { turbo_stream: true } %>
+          <div id="monitoring_status" class="flex items-center">
+            <span class="text-gray-500">Monitoring Stopped 🔴</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Current Level Objectives -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Current Level Challenges</h3>
+        <div class="space-y-3">
+          <% @current_level_objectives.each do |objective| %>
+            <div class="flex items-center justify-between p-3 border rounded-lg <%= @game_progress.objective_completed?(objective['key']) ? 'bg-green-50 border-green-200' : 'bg-gray-50' %>">
+              <div class="flex items-center space-x-3">
+                <% if @game_progress.objective_completed?(objective['key']) %>
+                  <span class="text-2xl">✅</span>
+                <% else %>
+                  <span class="text-2xl">🔄</span>
+                <% end %>
+                <div>
+                  <p class="font-medium text-gray-800"><%= objective['title'] %></p>
+                  <p class="text-sm text-gray-600"><%= objective['description'] %></p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-lg text-blue-600"><%= objective['points'] %> pts</p>
+                <%= link_to "View", objective_debugging_game_index_path(objective_key: objective['key']), 
+                    class: "text-sm text-blue-500 hover:text-blue-700" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Level Progress -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Level Progress</h3>
+        <div class="space-y-4">
+          <% GameProgress::LEVELS.each_with_index do |level, index| %>
+            <% level_config = @levels_config[level.to_sym] %>
+            <% is_current = @game_progress.current_level == level %>
+            <% is_unlocked = @game_progress.total_points >= level_config[:min_points] %>
+            <% level_objectives = @objectives_by_level[level] || [] %>
+            <% completed_count = level_objectives.count { |obj| @game_progress.objective_completed?(obj['key']) } %>
+            
+            <div class="flex items-center justify-between p-3 rounded-lg <%= is_current ? 'bg-blue-50 border-2 border-blue-200' : 'bg-gray-50' %>">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl"><%= level_config[:emoji] %></span>
+                <div>
+                  <p class="font-medium <%= is_current ? 'text-blue-800' : 'text-gray-800' %>">
+                    <%= level_config[:name] %>
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    <%= completed_count %>/<%= level_objectives.length %> completed
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <% if is_unlocked %>
+                  <span class="text-green-500">🔓</span>
+                <% else %>
+                  <span class="text-gray-400">🔒</span>
+                <% end %>
+                <p class="text-sm text-gray-500"><%= level_config[:min_points] %> pts required</p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Statistics -->
+    <%= render 'user_statistics' %>
+    
+    <!-- Global Statistics -->
+    <div class="mt-8">
+      <%= render 'global_statistics' %>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">🏆 Leaderboard</h3>
+      
+      <!-- Current User Rank -->
+      <% if @current_user_rank && @current_user_rank > 10 %>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="text-lg font-bold text-blue-600">#<%= @current_user_rank %></span>
+              <div>
+                <p class="font-medium text-blue-800">Your Position</p>
+                <p class="text-sm text-blue-600">
+                  <%= @game_progress.level_emoji %> <%= @game_progress.level_title %>
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-lg text-blue-600"><%= @game_progress.total_points %> pts</p>
+              <p class="text-sm text-blue-500">Streak: <%= @game_progress.current_streak %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-auto">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-2 text-left">Rank</th>
+              <th class="px-4 py-2 text-left">Player</th>
+              <th class="px-4 py-2 text-left">Level</th>
+              <th class="px-4 py-2 text-left">Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @leaderboard.each_with_index do |user, index| %>
+              <tr class="border-t <%= user == @current_user ? 'bg-blue-50' : '' %>">
+                <td class="px-4 py-2 font-medium">
+                  <% if index == 0 %>
+                    🥇 #1
+                  <% elsif index == 1 %>
+                    🥈 #2
+                  <% elsif index == 2 %>
+                    🥉 #3
+                  <% else %>
+                    #<%= index + 1 %>
+                  <% end %>
+                </td>
+                <td class="px-4 py-2">
+                  <%= user.name %>
+                  <%= '(You)' if user == @current_user %>
+                </td>
+                <td class="px-4 py-2">
+                  <%= user.game_progress.level_emoji %> <%= user.game_progress.level_title %>
+                </td>
+                <td class="px-4 py-2 font-bold"><%= user.game_progress.total_points %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reset Game Progress -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">🔄 Reset Options</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Progress Only Reset -->
+        <%= form_with url: reset_debugging_game_index_path, method: :post, local: true, 
+            class: "bg-yellow-50 border border-yellow-200 rounded-lg p-4", 
+            data: { confirm: "Reset only your game progress? Logs will be preserved." } do |f| %>
+          <%= f.hidden_field :reset_type, value: 'progress_only' %>
+          <h4 class="font-medium text-yellow-800 mb-2">Progress Only</h4>
+          <p class="text-sm text-yellow-600 mb-3">Reset levels, points, and completed objectives. Keep debugging logs.</p>
+          <%= f.submit "Reset Progress", 
+              class: "w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
+        
+        <!-- Logs Only Reset -->
+        <%= form_with url: reset_debugging_game_index_path, method: :post, local: true, 
+            class: "bg-blue-50 border border-blue-200 rounded-lg p-4", 
+            data: { confirm: "Clear all debugging tool logs? Progress will be preserved." } do |f| %>
+          <%= f.hidden_field :reset_type, value: 'logs_only' %>
+          <h4 class="font-medium text-blue-800 mb-2">Logs Only</h4>
+          <p class="text-sm text-blue-600 mb-3">Clear debugging tool log files. Keep your progress.</p>
+          <%= f.submit "Clear Logs", 
+              class: "w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
+        
+        <!-- Progress and Logs Reset -->
+        <%= form_with url: reset_debugging_game_index_path, method: :post, local: true, 
+            class: "bg-orange-50 border border-orange-200 rounded-lg p-4", 
+            data: { confirm: "Reset progress AND clear all logs? This will remove most of your data." } do |f| %>
+          <%= f.hidden_field :reset_type, value: 'progress_and_logs' %>
+          <h4 class="font-medium text-orange-800 mb-2">Progress & Logs</h4>
+          <p class="text-sm text-orange-600 mb-3">Reset game progress and clear all debugging logs.</p>
+          <%= f.submit "Reset Both", 
+              class: "w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
+        
+        <!-- Full Reset -->
+        <%= form_with url: reset_debugging_game_index_path, method: :post, local: true, 
+            class: "bg-red-50 border border-red-200 rounded-lg p-4", 
+            data: { confirm: "FULL RESET: This will delete ALL your data and start completely fresh. Are you absolutely sure?" } do |f| %>
+          <%= f.hidden_field :reset_type, value: 'full_reset' %>
+          <h4 class="font-medium text-red-800 mb-2">Full Reset</h4>
+          <p class="text-sm text-red-600 mb-3">Complete reset: delete all progress, logs, and user data.</p>
+          <%= f.submit "Full Reset", 
+              class: "w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

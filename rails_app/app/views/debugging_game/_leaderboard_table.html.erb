@@ -1,0 +1,62 @@
+<div class="overflow-x-auto">
+  <table class="min-w-full table-auto">
+    <thead>
+      <tr class="bg-gray-50">
+        <th class="px-4 py-2 text-left">Rank</th>
+        <th class="px-4 py-2 text-left">Player</th>
+        <th class="px-4 py-2 text-left">Level</th>
+        <th class="px-4 py-2 text-left">Points</th>
+        <th class="px-4 py-2 text-left">Streak</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% leaderboard.each_with_index do |user, index| %>
+        <tr class="border-t hover:bg-gray-50 transition-colors <%= user == @current_user ? 'bg-blue-50 border-blue-200' : '' %>">
+          <td class="px-4 py-2 font-medium">
+            <% if index == 0 %>
+              🥇 #1
+            <% elsif index == 1 %>
+              🥈 #2
+            <% elsif index == 2 %>
+              🥉 #3
+            <% else %>
+              #<%= index + 1 %>
+            <% end %>
+          </td>
+          <td class="px-4 py-2">
+            <div class="flex items-center space-x-2">
+              <span class="font-medium"><%= user.name %></span>
+              <%= '(You)' if defined?(@current_user) && user == @current_user %>
+            </div>
+          </td>
+          <td class="px-4 py-2">
+            <div class="flex items-center space-x-2">
+              <span class="text-lg"><%= user.game_progress.level_emoji %></span>
+              <span class="text-sm"><%= user.game_progress.level_title %></span>
+            </div>
+          </td>
+          <td class="px-4 py-2 font-bold text-blue-600">
+            <%= user.game_progress.total_points %>
+          </td>
+          <td class="px-4 py-2">
+            <div class="flex items-center space-x-1">
+              <span class="text-orange-500">🔥</span>
+              <span class="font-medium"><%= user.game_progress.current_streak %></span>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      
+      <% if leaderboard.empty? %>
+        <tr>
+          <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+            <div class="flex flex-col items-center space-y-2">
+              <span class="text-4xl">🏆</span>
+              <p>No players yet. Be the first to start debugging!</p>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

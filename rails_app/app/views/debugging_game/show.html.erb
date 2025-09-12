@@ -1,0 +1,174 @@
+<div class="container mx-auto px-4 py-8">
+    <!-- Back Navigation -->
+    <div class="mb-6">
+      <%= link_to debugging_game_index_path, class: "text-blue-500 hover:text-blue-700 flex items-center space-x-2" do %>
+        <span>←</span>
+        <span>Back to Game Dashboard</span>
+      <% end %>
+    </div>
+
+    <!-- Objective Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-4">
+          <% if @is_completed %>
+            <span class="text-4xl">✅</span>
+          <% elsif @is_unlocked %>
+            <span class="text-4xl">🔄</span>
+          <% else %>
+            <span class="text-4xl">🔒</span>
+          <% end %>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-800"><%= @objective['title'] %></h1>
+            <p class="text-lg text-gray-600"><%= @objective['description'] %></p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-3xl font-bold text-blue-600"><%= @objective['points'] %> points</p>
+          <p class="text-sm text-gray-500">Level: <%= @objective['level'].humanize %></p>
+        </div>
+      </div>
+
+      <% if @objective['time_limit'] %>
+        <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
+          <p class="text-yellow-800">
+            ⏱️ Time Challenge: Complete within <%= @objective['time_limit'] / 60 %> minutes for bonus points!
+          </p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Objective Status -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Problem Description -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">🎯 Challenge</h2>
+        <div class="prose max-w-none">
+          <p class="text-gray-700 text-lg leading-relaxed">
+            <%= @objective['problem'] %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Commands and Examples -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Expected Commands</h3>
+        <% if @objective['commands'] %>
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <pre class="text-sm"><%= @objective['commands'].join("\n") %></pre>
+          </div>
+        <% end %>
+        
+        <% if @objective['examples'] %>
+          <h4 class="text-lg font-medium text-gray-700 mb-2">Examples:</h4>
+          <div class="space-y-2">
+            <% @objective['examples'].each do |example| %>
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <code class="text-sm text-blue-800"><%= example %></code>
+              </div>
+            <% end %>
+                    Hint #<%= index + 1 %>
+                  </summary>
+                  <p class="mt-2 text-gray-700"><%= hint %></p>
+                </details>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Prerequisites -->
+    <% if @objective['prerequisites'].present? %>
+      <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">🔗 Prerequisites</h2>
+        <div class="space-y-2">
+          <% @objective['prerequisites'].each do |prerequisite_key| %>
+            <% prerequisite_obj = Settings.debugging_game.objectives.find { |obj| obj['key'] == prerequisite_key } %>
+            <% is_completed = @game_progress.objective_completed?(prerequisite_key) %>
+            
+            <div class="flex items-center justify-between p-3 border rounded-lg <%= is_completed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' %>">
+              <div class="flex items-center space-x-3">
+                <% if is_completed %>
+                  <span class="text-xl">✅</span>
+                <% else %>
+                  <span class="text-xl">❌</span>
+                <% end %>
+                <span class="font-medium <%= is_completed ? 'text-green-800' : 'text-red-800' %>">
+                  <%= prerequisite_obj['title'] %>
+                </span>
+              </div>
+              <%= link_to "View", objective_debugging_game_index_path(objective_key: prerequisite_key), 
+                  class: "text-sm text-blue-500 hover:text-blue-700" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Status Messages -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <% if @is_completed %>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">✅</span>
+            <div>
+              <h4 class="font-medium text-green-800">Objective Completed!</h4>
+              <p class="text-green-600">Great job! You've mastered this debugging technique.</p>
+            </div>
+          </div>
+        </div>
+      <% elsif @can_attempt %>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">🎯</span>
+            <div>
+              <h4 class="font-medium text-blue-800">Ready to Start!</h4>
+              <p class="text-blue-600">This objective is unlocked and ready for you to tackle.</p>
+              <div class="mt-2">
+                <p class="text-sm text-blue-600">
+                  <strong>Expected commands:</strong> <%= @objective['commands'].join(', ') if @objective['commands'] %>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% elsif @is_unlocked %>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">⏳</span>
+            <div>
+              <h4 class="font-medium text-yellow-800">Level Unlocked</h4>
+              <p class="text-yellow-600">Your current level allows access to this objective, but prerequisites may be needed.</p>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">🔒</span>
+            <div>
+              <h4 class="font-medium text-red-800">Objective Locked</h4>
+              <% level_config = Settings.debugging_game.levels[@objective['level'].to_sym] %>
+              <% points_needed = level_config[:min_points] - @game_progress.total_points %>
+              <% if points_needed > 0 %>
+                <p class="text-red-600">
+                  You need <%= points_needed %> more points to unlock the <%= level_config[:name] %> level.
+                </p>
+              <% else %>
+                <p class="text-red-600">Complete the prerequisites to unlock this objective.</p>
+              <% end %>
+            </div>
+
+            <div class="text-center">
+              <%= link_to debugging_game_index_path, 
+                  class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg inline-block" do %>
+                Return to Dashboard
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

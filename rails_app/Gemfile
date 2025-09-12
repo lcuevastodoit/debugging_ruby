@@ -19,6 +19,18 @@ gem "tailwindcss-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# Background job processing
+gem "sidekiq", "~> 7.0"
+
+# Concurrent processing
+gem "concurrent-ruby", "~> 1.2"
+
+# Configuration management
+gem "config", "~> 4.2"
+
+# File monitoring
+gem "listen", "~> 3.8"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
