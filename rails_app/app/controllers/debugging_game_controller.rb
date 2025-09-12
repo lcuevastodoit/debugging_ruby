@@ -5,7 +5,8 @@ class DebuggingGameController < ApplicationController
   def index
     @objectives_by_level = Settings.debugging_game.objectives.group_by { |obj| obj['level'] }
     @levels_config = Settings.debugging_game.levels.to_h
-    @current_level_objectives = @objectives_by_level[@game_progress.current_level] || []
+    current_level = @game_progress&.current_level || 'rookie'
+    @current_level_objectives = @objectives_by_level[current_level] || []
     @leaderboard = User.joins(:game_progress)
                       .order('game_progresses.total_points DESC', 'game_progresses.current_level DESC', 'game_progresses.current_streak DESC')
                       .limit(10)
@@ -45,10 +46,19 @@ class DebuggingGameController < ApplicationController
         notice_message = 'Debugging logs have been cleared!'
       when 'full_reset'
         # Global reset - delete ALL game progress for ALL users
+        Rails.logger.info "Full reset: Destroying all GameProgress records"
+        destroyed_count = GameProgress.count
         GameProgress.destroy_all
+        Rails.logger.info "Full reset: Destroyed #{destroyed_count} GameProgress records"
+        
         clear_debugging_logs
         clear_user_cache
+        
+        # Set session flag to prevent automatic GameProgress recreation
+        session[:full_reset_performed] = true
+        
         notice_message = 'GLOBAL RESET performed! All users data has been reset. Starting completely fresh.'
+        Rails.logger.info "Full reset completed successfully"
       end
       
       redirect_to debugging_game_index_path, notice: notice_message
@@ -79,18 +89,33 @@ class DebuggingGameController < ApplicationController
   end
   
   def live_status
-    render json: {
-      current_level: @game_progress.current_level,
-      total_points: @game_progress.total_points,
-      current_streak: @game_progress.current_streak,
-      completed_objectives_count: @game_progress.completed_objectives.length,
-      level_emoji: @game_progress.level_emoji,
-      level_title: @game_progress.level_title,
-      updated_at: @game_progress.updated_at
-    }
+    if @game_progress
+      render json: {
+        current_level: @game_progress.current_level,
+        total_points: @game_progress.total_points,
+        current_streak: @game_progress.current_streak,
+        completed_objectives_count: @game_progress.completed_objectives.length,
+        level_emoji: @game_progress.level_emoji,
+        level_title: @game_progress.level_title,
+        updated_at: @game_progress.updated_at
+      }
+    else
+      render json: {
+        current_level: 'rookie',
+        total_points: 0,
+        current_streak: 0,
+        completed_objectives_count: 0,
+        level_emoji: '🐣',
+        level_title: 'Novato',
+        updated_at: Time.current,
+        reset_performed: true
+      }
+    end
   end
   
   def get_hint
+    return render json: { error: 'No game progress available. Please start playing first.' }, status: :not_found unless @game_progress
+    
     objective_key = params[:objective_key]
     objective = @all_objectives.find { |obj| obj['key'] == objective_key }
     
@@ -127,22 +152,30 @@ class DebuggingGameController < ApplicationController
   end
 
   def ensure_game_progress
-    @game_progress = @current_user.game_progress || @current_user.create_game_progress!(
-      current_level: 'rookie',
-      total_points: 0,
-      objectives_completed: [],
-      current_streak: 0,
-      longest_streak: 0,
-      hints_used: 0,
-      resets_count: 0,
-      last_played_at: Time.current
-    )
+    # Don't auto-create GameProgress if we just performed a full reset
+    if session[:full_reset_performed]
+      session.delete(:full_reset_performed)
+      @game_progress = nil
+    else
+      @game_progress = @current_user.game_progress || @current_user.create_game_progress!(
+        current_level: 'rookie',
+        total_points: 0,
+        objectives_completed: [],
+        current_streak: 0,
+        longest_streak: 0,
+        hints_used: 0,
+        resets_count: 0,
+        last_played_at: Time.current
+      )
+    end
     
     @all_objectives = Settings.debugging_game.objectives.map(&:to_h)
     @objectives_by_level = @all_objectives.group_by { |obj| obj['level'] }
   end
 
   def objective_unlocked?(objective)
+    return false unless @game_progress
+    
     # Check if objective level is unlocked based on points
     level_config = Settings.debugging_game.levels[objective['level'].to_sym]
     level_unlocked = @game_progress.total_points >= level_config[:min_points]
@@ -155,6 +188,8 @@ class DebuggingGameController < ApplicationController
   end
   
   def can_attempt_objective?(objective)
+    return false unless @game_progress
+    
     # Can attempt if objective is unlocked and not already completed
     objective_unlocked?(objective) && !@game_progress.objective_completed?(objective['key'])
   end
@@ -172,7 +207,10 @@ class DebuggingGameController < ApplicationController
     log_locations = Settings.debugging_game.log_locations.to_h
     cleared_logs = []
     
+    # Clear debugging tool history files
     log_locations.each do |tool, location|
+      next if tool.to_s == 'rails' # Handle Rails log separately
+      
       expanded_path = File.expand_path(location)
       
       begin
@@ -184,6 +222,21 @@ class DebuggingGameController < ApplicationController
       rescue => e
         Rails.logger.error "Failed to clear #{tool} log: #{e.message}"
       end
+    end
+    
+    # Clear Rails development log
+    begin
+      rails_log_path = Rails.root.join('log', 'development.log')
+      if File.exist?(rails_log_path) && File.writable?(rails_log_path)
+        # Log before clearing
+        Rails.logger.info "Full reset: Clearing Rails development log"
+        File.truncate(rails_log_path, 0)
+        cleared_logs << 'rails'
+        # Since we just cleared the log, we need to reinitialize logging
+        Rails.logger.info "Rails development log cleared during full reset"
+      end
+    rescue => e
+      Rails.logger.error "Failed to clear Rails development log: #{e.message}"
     end
     
     cleared_logs
