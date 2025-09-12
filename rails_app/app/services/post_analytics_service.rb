@@ -6,7 +6,7 @@ class PostAnalyticsService
 
   def calculate_stats
     # Problema intencional para debugging
-    binding.pry  # Para pry
+    # binding.pry  # Para pry
 
     {
       total_posts: @posts.count,

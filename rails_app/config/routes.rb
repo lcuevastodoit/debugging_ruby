@@ -5,7 +5,7 @@ Rails.application.routes.draw do
     resources :posts
   end
 
-  resources :users
+  resources :users, only: [:index, :show, :new, :create]
 
   get 'debug_error', to: 'users#index', defaults: { debug: 'error' }
 

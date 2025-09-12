@@ -18,6 +18,7 @@
   <div class="flex items-center justify-between">
     <%= form.select :role, options_for_select([['User', 'user'], ['Admin', 'admin']], user.role), {}, { class: "border border-gray-300 rounded p-1 bg-white" } %>
     <div class="flex gap-2">
+      <%= link_to "Show", user_path(user), class: "bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600" %>
       <%= form.submit "Save", class: "bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600" %>
       <form method="post" action="<%= user_path(user) %>" style="display: inline;" data-confirm="Are you sure you want to delete <%= user.name %>? This action cannot be undone." data-remote="true">
         <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
