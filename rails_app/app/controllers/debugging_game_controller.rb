@@ -44,10 +44,11 @@ class DebuggingGameController < ApplicationController
         clear_debugging_logs
         notice_message = 'Debugging logs have been cleared!'
       when 'full_reset'
-        @game_progress&.destroy if @game_progress
+        # Global reset - delete ALL game progress for ALL users
+        GameProgress.destroy_all
         clear_debugging_logs
         clear_user_cache
-        notice_message = 'Complete reset performed! Starting fresh.'
+        notice_message = 'GLOBAL RESET performed! All users data has been reset. Starting completely fresh.'
       end
       
       redirect_to debugging_game_index_path, notice: notice_message

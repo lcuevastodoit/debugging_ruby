@@ -222,10 +222,10 @@
         <!-- Full Reset -->
         <%= form_with url: reset_debugging_game_index_path, method: :post, local: true, 
             class: "bg-red-50 border border-red-200 rounded-lg p-4", 
-            data: { confirm: "FULL RESET: This will delete ALL your data and start completely fresh. Are you absolutely sure?" } do |f| %>
+            data: { confirm: "⚠️ GLOBAL RESET WARNING ⚠️\n\nThis will DELETE ALL GAME DATA for ALL USERS in the system!\n\n• All user progress will be lost\n• All points and levels will be reset\n• All debugging logs will be cleared\n• This action CANNOT be undone\n\nAre you absolutely sure you want to proceed?" } do |f| %>
           <%= f.hidden_field :reset_type, value: 'full_reset' %>
-          <h4 class="font-medium text-red-800 mb-2">Full Reset</h4>
-          <p class="text-sm text-red-600 mb-3">Complete reset: delete all progress, logs, and user data.</p>
+          <h4 class="font-medium text-red-800 mb-2">🚨 Global Reset</h4>
+          <p class="text-sm text-red-600 mb-3">⚠️ DANGER: This will reset ALL users' data system-wide. Use with extreme caution!</p>
           <%= f.submit "Full Reset", 
               class: "w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" %>
         <% end %>
