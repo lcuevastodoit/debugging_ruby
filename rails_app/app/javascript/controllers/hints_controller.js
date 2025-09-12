@@ -58,11 +58,11 @@ export default class extends Controller {
         </div>
       </div>
     `
-    
+
     // Animate the hint appearance
     this.contentTarget.firstElementChild.style.opacity = '0'
     this.contentTarget.firstElementChild.style.transform = 'translateY(-10px)'
-    
+
     setTimeout(() => {
       this.contentTarget.firstElementChild.style.transition = 'all 0.3s ease-out'
       this.contentTarget.firstElementChild.style.opacity = '1'

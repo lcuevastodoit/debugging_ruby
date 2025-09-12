@@ -11,7 +11,7 @@ class DebuggingGameController < ApplicationController
                       .order('game_progresses.total_points DESC', 'game_progresses.current_level DESC', 'game_progresses.current_streak DESC')
                       .limit(10)
                       .includes(:game_progress)
-    
+
     @current_user_rank = get_user_rank(@current_user)
     @user_stats = calculate_user_statistics(@current_user)
     @global_stats = calculate_global_statistics
@@ -20,9 +20,9 @@ class DebuggingGameController < ApplicationController
   def show
     @objective_key = params[:objective_key]
     @objective = @all_objectives.find { |obj| obj['key'] == @objective_key }
-    
+
     return redirect_to debugging_game_index_path, alert: 'Objective not found.' unless @objective
-    
+
     @is_completed = @game_progress.objective_completed?(@objective_key)
     @prerequisites = @objective['prerequisites'] || []
     @is_unlocked = objective_unlocked?(@objective)
@@ -32,7 +32,7 @@ class DebuggingGameController < ApplicationController
   def reset
     if request.post?
       reset_type = params[:reset_type] || 'progress_only'
-      
+
       case reset_type
       when 'progress_only'
         @game_progress&.reset_progress!
@@ -50,17 +50,17 @@ class DebuggingGameController < ApplicationController
         destroyed_count = GameProgress.count
         GameProgress.destroy_all
         Rails.logger.info "Full reset: Destroyed #{destroyed_count} GameProgress records"
-        
+
         clear_debugging_logs
         clear_user_cache
-        
+
         # Set session flag to prevent automatic GameProgress recreation
         session[:full_reset_performed] = true
-        
+
         notice_message = 'GLOBAL RESET performed! All users data has been reset. Starting completely fresh.'
         Rails.logger.info "Full reset completed successfully"
       end
-      
+
       redirect_to debugging_game_index_path, notice: notice_message
     end
   end
@@ -68,10 +68,10 @@ class DebuggingGameController < ApplicationController
   def start_monitoring
     @monitor_service = LogMonitorService.new
     @monitor_service.start_monitoring
-    
+
     respond_to do |format|
-      format.turbo_stream { 
-        render turbo_stream: turbo_stream.update('monitoring_status', 
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.update('monitoring_status',
           '<div class="text-green-600 font-medium">Monitoring Active 🟢</div>')
       }
       format.html { redirect_to debugging_game_index_path, notice: 'Log monitoring started!' }
@@ -80,14 +80,14 @@ class DebuggingGameController < ApplicationController
 
   def stop_monitoring
     respond_to do |format|
-      format.turbo_stream { 
-        render turbo_stream: turbo_stream.update('monitoring_status', 
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.update('monitoring_status',
           '<div class="text-red-600 font-medium">Monitoring Stopped 🔴</div>')
       }
       format.html { redirect_to debugging_game_index_path, notice: 'Log monitoring stopped!' }
     end
   end
-  
+
   def live_status
     if @game_progress
       render json: {
@@ -112,23 +112,23 @@ class DebuggingGameController < ApplicationController
       }
     end
   end
-  
+
   def get_hint
     return render json: { error: 'No game progress available. Please start playing first.' }, status: :not_found unless @game_progress
-    
+
     objective_key = params[:objective_key]
     objective = @all_objectives.find { |obj| obj['key'] == objective_key }
-    
+
     return render json: { error: 'Objective not found' }, status: :not_found unless objective
     return render json: { error: 'Objective already completed' } if @game_progress.objective_completed?(objective_key)
-    
+
     unless @game_progress.can_use_hint?(objective_key)
       return render json: { error: 'Hint not available for this objective' }
     end
-    
+
     @game_progress.use_hint!
     hint_content = generate_contextual_hint(objective)
-    
+
     render json: {
       hint: hint_content,
       hints_used: @game_progress.hints_used,
@@ -168,37 +168,37 @@ class DebuggingGameController < ApplicationController
         last_played_at: Time.current
       )
     end
-    
+
     @all_objectives = Settings.debugging_game.objectives.map(&:to_h)
     @objectives_by_level = @all_objectives.group_by { |obj| obj['level'] }
   end
 
   def objective_unlocked?(objective)
     return false unless @game_progress
-    
+
     # Check if objective level is unlocked based on points
     level_config = Settings.debugging_game.levels[objective['level'].to_sym]
     level_unlocked = @game_progress.total_points >= level_config[:min_points]
-    
+
     # Check prerequisites
     prerequisites = objective['prerequisites'] || []
     prerequisites_met = prerequisites.all? { |prereq| @game_progress.objective_completed?(prereq) }
-    
+
     level_unlocked && prerequisites_met
   end
-  
+
   def can_attempt_objective?(objective)
     return false unless @game_progress
-    
+
     # Can attempt if objective is unlocked and not already completed
     objective_unlocked?(objective) && !@game_progress.objective_completed?(objective['key'])
   end
-  
+
   def get_user_rank(user)
     return nil unless user.game_progress
-    
+
     User.joins(:game_progress)
-        .where('game_progresses.total_points > ? OR (game_progresses.total_points = ? AND game_progresses.id < ?)', 
+        .where('game_progresses.total_points > ? OR (game_progresses.total_points = ? AND game_progresses.id < ?)',
                user.game_progress.total_points, user.game_progress.total_points, user.game_progress.id)
         .count + 1
   end
@@ -206,13 +206,13 @@ class DebuggingGameController < ApplicationController
   def clear_debugging_logs
     log_locations = Settings.debugging_game.log_locations.to_h
     cleared_logs = []
-    
+
     # Clear debugging tool history files
     log_locations.each do |tool, location|
       next if tool.to_s == 'rails' # Handle Rails log separately
-      
+
       expanded_path = File.expand_path(location)
-      
+
       begin
         if File.exist?(expanded_path) && File.writable?(expanded_path)
           File.truncate(expanded_path, 0)
@@ -223,7 +223,7 @@ class DebuggingGameController < ApplicationController
         Rails.logger.error "Failed to clear #{tool} log: #{e.message}"
       end
     end
-    
+
     # Clear Rails development log
     begin
       rails_log_path = Rails.root.join('log', 'development.log')
@@ -238,21 +238,21 @@ class DebuggingGameController < ApplicationController
     rescue => e
       Rails.logger.error "Failed to clear Rails development log: #{e.message}"
     end
-    
+
     cleared_logs
   end
-  
+
   def clear_user_cache
     # Clear any cached user sessions or temporary data
     # In a real app, this might clear Redis cache, session data, etc.
     Rails.cache.clear if Rails.cache.respond_to?(:clear)
     Rails.logger.info "Cleared user cache and temporary data"
   end
-  
+
   def get_log_status
     log_locations = Settings.debugging_game.log_locations.to_h
     status = {}
-    
+
     log_locations.each do |tool, location|
       expanded_path = File.expand_path(location)
       if File.exist?(expanded_path)
@@ -263,14 +263,14 @@ class DebuggingGameController < ApplicationController
         status[tool] = { size: 0, lines: 0, path: expanded_path, exists: false }
       end
     end
-    
+
     status
   end
-  
+
   def generate_contextual_hint(objective)
     hints = objective['hints'] || []
     return "No hints available for this objective." if hints.empty?
-    
+
     # Progressive hints based on user's current progress
     case @game_progress.current_level
     when 'rookie'
@@ -281,15 +281,15 @@ class DebuggingGameController < ApplicationController
       hints.last || "Apply advanced debugging techniques to solve this challenge."
     end
   end
-  
+
   def calculate_user_statistics(user)
     progress = user.game_progress
     return {} unless progress
-    
+
     completed_count = progress.completed_objectives.length
     total_objectives = Settings.debugging_game.objectives.length
     completion_rate = total_objectives > 0 ? (completed_count.to_f / total_objectives * 100).round(1) : 0
-    
+
     {
       completion_rate: completion_rate,
       efficiency_score: calculate_efficiency_score(progress),
@@ -300,13 +300,13 @@ class DebuggingGameController < ApplicationController
       level_progress: calculate_level_progress(progress)
     }
   end
-  
+
   def calculate_global_statistics
     total_users = User.joins(:game_progress).count
     # Calculate total objectives completed by iterating through all progress records
     total_objectives_completed = GameProgress.includes(:user).sum { |progress| progress.completed_objectives.length }
     avg_completion_rate = total_users > 0 ? (total_objectives_completed.to_f / (total_users * 16) * 100).round(1) : 0
-    
+
     {
       total_players: total_users,
       total_objectives_completed: total_objectives_completed,
@@ -316,34 +316,34 @@ class DebuggingGameController < ApplicationController
       total_hints_used: GameProgress.sum(:hints_used)
     }
   end
-  
+
   def calculate_efficiency_score(progress)
     return 0 if progress.completed_objectives.empty?
-    
+
     base_score = progress.total_points
     hint_penalty = progress.hints_used * 5
     reset_penalty = progress.resets_count * 20
     streak_bonus = progress.longest_streak * 10
-    
+
     [(base_score - hint_penalty - reset_penalty + streak_bonus), 0].max
   end
-  
+
   def calculate_favorite_tool(user)
     # This would require tracking tool usage, for now return placeholder
     ['pry', 'debug', 'byebug', 'irb'].sample
   end
-  
+
   def calculate_avg_time_per_objective(progress)
     # Placeholder calculation - would need to track objective completion times
     return "N/A" if progress.completed_objectives.empty?
     "~15 min"
   end
-  
+
   def calculate_level_progress(progress)
     current_level_index = GameProgress::LEVELS.index(progress.current_level) || 0
     ((current_level_index + 1).to_f / GameProgress::LEVELS.length * 100).round(1)
   end
-  
+
   def calculate_most_popular_level
     GameProgress.group(:current_level).count.max_by { |level, count| count }&.first || 'rookie'
   end

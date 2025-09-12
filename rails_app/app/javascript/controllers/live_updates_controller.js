@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["status", "points", "level", "streak", "leaderboard"]
-  static values = { 
+  static values = {
     pollInterval: { type: Number, default: 3000 },
     lastUpdate: String
   }
@@ -18,7 +18,7 @@ export default class extends Controller {
 
   startPolling() {
     this.stopPolling() // Clear any existing interval
-    
+
     this.pollTimer = setInterval(() => {
       this.fetchUpdates()
     }, this.pollIntervalValue)
@@ -39,7 +39,7 @@ export default class extends Controller {
           'X-Requested-With': 'XMLHttpRequest'
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         this.updateDisplay(data)
@@ -53,25 +53,25 @@ export default class extends Controller {
     // Only update if data has actually changed
     if (data.updated_at !== this.lastUpdateValue) {
       this.lastUpdateValue = data.updated_at
-      
+
       // Update points
       if (this.hasPointsTarget) {
         this.pointsTarget.textContent = data.total_points
         this.animateChange(this.pointsTarget)
       }
-      
+
       // Update level
       if (this.hasLevelTarget) {
         this.levelTarget.innerHTML = `${data.level_emoji} ${data.level_title}`
         this.animateChange(this.levelTarget)
       }
-      
+
       // Update streak
       if (this.hasStreakTarget) {
         this.streakTarget.textContent = data.current_streak
         this.animateChange(this.streakTarget)
       }
-      
+
       // Update status display
       if (this.hasStatusTarget) {
         this.statusTarget.innerHTML = `

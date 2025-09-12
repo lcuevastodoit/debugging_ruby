@@ -9,29 +9,29 @@ class LogMonitorService
 
   def start_monitoring
     return if @monitoring
-    
+
     @monitoring = true
     @futures = []
-    
+
     @log_locations.each do |tool, location|
       expanded_path = File.expand_path(location)
-      
+
       unless File.exist?(expanded_path)
         Rails.logger.warn "Log file not found: #{expanded_path}"
         next
       end
-      
+
       # Use lighter monitoring with background job processing
       future = Concurrent::Future.execute do
         monitor_log_file_lightweight(expanded_path, tool.to_s)
       end
-      
+
       @futures << future
     end
-    
+
     # Schedule periodic leaderboard updates
     schedule_periodic_jobs
-    
+
     Rails.logger.info "Started monitoring #{@futures.length} log files with background processing"
   end
 
@@ -56,19 +56,19 @@ class LogMonitorService
 
   def monitor_log_file(tool, file_path)
     last_position = File.size(file_path)
-    
+
     loop do
       break unless @monitoring
-      
+
       begin
         current_size = File.size(file_path)
-        
+
         if current_size > last_position
           new_content = read_new_content(file_path, last_position, current_size)
           process_new_commands(tool, new_content) if new_content.present?
           last_position = current_size
         end
-        
+
         sleep 0.5 # Check every 500ms
       rescue => e
         Rails.logger.error "Error monitoring #{tool} log: #{e.message}"
@@ -79,7 +79,7 @@ class LogMonitorService
 
   def read_new_content(file_path, start_pos, end_pos)
     return nil if start_pos >= end_pos
-    
+
     File.open(file_path, 'r') do |file|
       file.seek(start_pos)
       file.read(end_pos - start_pos)
@@ -97,7 +97,7 @@ class LogMonitorService
   def schedule_periodic_jobs
     # Schedule leaderboard updates every 5 minutes
     LeaderboardUpdateJob.set(wait: 5.minutes).perform_later
-    
+
     Rails.logger.info "Scheduled periodic background jobs"
   end
 
@@ -105,7 +105,7 @@ class LogMonitorService
     # Extract meaningful commands from log content
     # This will vary based on the tool's log format
     lines = content.split("\n").map(&:strip).reject(&:blank?)
-    
+
     # Filter out timestamps, prompts, and other noise
     commands = lines.select do |line|
       # Skip empty lines, timestamps, and common prompt patterns
@@ -115,10 +115,10 @@ class LogMonitorService
       next false if line.match?(/^pry\(\w+\)>/) # Pry prompts
       next false if line.match?(/^\[?\d+\]?[\s>]*$/) # simple prompts
       next false if line.match?(/^=> /) # output lines
-      
+
       true
     end
-    
+
     # Clean up commands
     commands.map do |cmd|
       # Remove common prefixes and suffixes

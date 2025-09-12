@@ -1,6 +1,6 @@
 <div class="bg-white rounded-lg shadow-lg p-6">
   <h3 class="text-xl font-semibold text-gray-800 mb-6">🌍 Global Statistics</h3>
-  
+
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
     <!-- Total Players -->
     <div class="text-center">
@@ -8,35 +8,35 @@
       <div class="text-2xl font-bold text-gray-800"><%= @global_stats[:total_players] %></div>
       <div class="text-sm text-gray-600">Total Players</div>
     </div>
-    
+
     <!-- Total Objectives Completed -->
     <div class="text-center">
       <div class="text-3xl mb-2">✅</div>
       <div class="text-2xl font-bold text-gray-800"><%= @global_stats[:total_objectives_completed] %></div>
       <div class="text-sm text-gray-600">Objectives Completed</div>
     </div>
-    
+
     <!-- Average Completion Rate -->
     <div class="text-center">
       <div class="text-3xl mb-2">📊</div>
       <div class="text-2xl font-bold text-gray-800"><%= @global_stats[:avg_completion_rate] %>%</div>
       <div class="text-sm text-gray-600">Avg Completion</div>
     </div>
-    
+
     <!-- Most Popular Level -->
     <div class="text-center">
       <div class="text-3xl mb-2">🏆</div>
       <div class="text-lg font-bold text-gray-800 capitalize"><%= @global_stats[:most_popular_level] %></div>
       <div class="text-sm text-gray-600">Popular Level</div>
     </div>
-    
+
     <!-- Highest Streak -->
     <div class="text-center">
       <div class="text-3xl mb-2">🔥</div>
       <div class="text-2xl font-bold text-gray-800"><%= @global_stats[:highest_streak] %></div>
       <div class="text-sm text-gray-600">Best Streak</div>
     </div>
-    
+
     <!-- Total Hints Used -->
     <div class="text-center">
       <div class="text-3xl mb-2">💡</div>

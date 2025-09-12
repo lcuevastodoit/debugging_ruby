@@ -1,11 +1,11 @@
 class LogProcessingJob < ApplicationJob
   queue_as :high_priority
-  
+
   def perform(log_file_path, tool_name, user_id = nil)
     return unless File.exist?(log_file_path)
-    
+
     Rails.logger.info "Processing #{tool_name} log file: #{log_file_path}"
-    
+
     begin
       # Process log file in chunks for better memory management
       process_log_in_chunks(log_file_path, tool_name, user_id)
@@ -15,19 +15,19 @@ class LogProcessingJob < ApplicationJob
       retry_job wait: 30.seconds, queue: :low_priority
     end
   end
-  
+
   private
-  
+
   def process_log_in_chunks(log_file_path, tool_name, user_id)
     chunk_size = 100 # Process 100 lines at a time
     commands_buffer = []
-    
+
     File.open(log_file_path, 'r') do |file|
       file.each_slice(chunk_size) do |lines|
         lines.each do |line|
           command = extract_command_from_line(line.strip, tool_name)
           next unless command
-          
+
           commands_buffer << {
             command: command,
             tool: tool_name,
@@ -35,19 +35,19 @@ class LogProcessingJob < ApplicationJob
             user_id: user_id
           }
         end
-        
+
         # Process accumulated commands in batches
         if commands_buffer.length >= 10
           process_command_batch(commands_buffer)
           commands_buffer.clear
         end
       end
-      
+
       # Process any remaining commands
       process_command_batch(commands_buffer) unless commands_buffer.empty?
     end
   end
-  
+
   def extract_command_from_line(line, tool)
     case tool.to_s
     when 'pry'
@@ -75,7 +75,7 @@ class LogProcessingJob < ApplicationJob
       line if line.present?
     end
   end
-  
+
   def extract_timestamp(line)
     # Try to extract timestamp from log line
     timestamp_match = line.match(/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/)
@@ -85,10 +85,10 @@ class LogProcessingJob < ApplicationJob
       Time.current
     end
   end
-  
+
   def process_command_batch(commands_batch)
     return if commands_batch.empty?
-    
+
     commands_batch.each do |command_data|
       # Enqueue individual command validation jobs
       CommandValidationJob.perform_later(
@@ -98,7 +98,7 @@ class LogProcessingJob < ApplicationJob
         command_data[:timestamp]
       )
     end
-    
+
     Rails.logger.info "Enqueued #{commands_batch.length} command validation jobs"
   end
 end

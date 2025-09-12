@@ -13,7 +13,7 @@ class CreateGameProgresses < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    
+
     add_index :game_progresses, :current_level
     add_index :game_progresses, :total_points
   end

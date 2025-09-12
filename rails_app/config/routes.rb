@@ -9,7 +9,7 @@ Rails.application.routes.draw do
       post :get_hint
     end
   end
-  
+
   root 'debugging_game#index'
 
   resources :users do

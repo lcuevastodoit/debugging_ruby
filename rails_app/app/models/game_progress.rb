@@ -1,37 +1,37 @@
 class GameProgress < ApplicationRecord
   belongs_to :user
-  
+
   LEVELS = %w[rookie magician sorcerer hero expert astro star final_boss].freeze
-  
+
   validates :current_level, presence: true, inclusion: { in: LEVELS }
   validates :total_points, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :current_streak, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :longest_streak, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :hints_used, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :resets_count, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  
+
   serialize :objectives_completed, coder: JSON
-  
+
   def completed_objectives
     objectives_completed || []
   end
-  
+
   def mark_objective_completed(objective_key)
     completed = completed_objectives
     completed << objective_key unless completed.include?(objective_key)
     self.objectives_completed = completed
     check_level_progression!
   end
-  
+
   def add_points(points)
     self.total_points += points
     check_level_progression!
   end
-  
+
   def objective_completed?(objective_key)
     completed_objectives.include?(objective_key)
   end
-  
+
   def reset_progress!
     update!(
       current_level: 'rookie',
@@ -42,21 +42,21 @@ class GameProgress < ApplicationRecord
       last_played_at: Time.current
     )
   end
-  
+
   def use_hint!
     self.increment!(:hints_used)
   end
-  
+
   def can_use_hint?(objective_key)
     # Allow hints after spending some time on an objective
     !objective_completed?(objective_key)
   end
-  
+
   def hint_penalty_points
     # Small point penalty for using hints to encourage learning
     hints_used * 5
   end
-  
+
   def level_emoji
     case current_level
     when 'rookie' then '🐣'
@@ -70,7 +70,7 @@ class GameProgress < ApplicationRecord
     else '🎮'
     end
   end
-  
+
   def level_title
     case current_level
     when 'rookie' then 'Novato'
@@ -84,13 +84,13 @@ class GameProgress < ApplicationRecord
     else 'Jugador'
     end
   end
-  
+
   private
-  
+
   def check_level_progression!
     levels_config = Settings.debugging_game.levels.to_h
     current_level_index = LEVELS.index(current_level)
-    
+
     # Check if we can advance to next level
     LEVELS[(current_level_index + 1)..-1].each do |next_level|
       level_config = levels_config[next_level.to_sym]

@@ -86,7 +86,7 @@ debugging_game:
 
 ## 🖥️ Interfaz de Usuario
 
-### 📊 Vista "Debugging Game" 
+### 📊 Vista "Debugging Game"
 
 **Componentes principales:**
 - **Tabla de retos** con estado visual (✅ completado, 🔄 en progreso, 🔒 bloqueado)
