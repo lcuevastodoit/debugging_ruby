@@ -1,6 +1,7 @@
 // User inline editing and creation functionality
 document.addEventListener('DOMContentLoaded', function() {
   const userForms = document.querySelectorAll('form[data-user-id]');
+  const deleteLinks = document.querySelectorAll('a[data-method="delete"]');
   const newUserForm = document.getElementById('new-user-form');
   const newUserFormContainer = document.getElementById('new-user-form-container');
   const toggleButton = document.getElementById('toggle-new-user-form');
@@ -31,6 +32,32 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!validateForm(form)) {
         event.preventDefault();
         return false;
+      }
+    });
+  });
+  
+  // Handle delete links
+  deleteLinks.forEach(link => {
+    link.addEventListener('ajax:success', function(event) {
+      const response = event.detail[0];
+      showSuccessMessage(response.message || 'User deleted successfully');
+      // Remove the user row from the DOM
+      const userRow = link.closest('form');
+      if (userRow) {
+        userRow.style.transition = 'opacity 0.3s ease-out';
+        userRow.style.opacity = '0';
+        setTimeout(() => {
+          userRow.remove();
+        }, 300);
+      }
+    });
+    
+    link.addEventListener('ajax:error', function(event) {
+      const response = event.detail[0];
+      if (response && response.errors) {
+        showErrorMessage(`Failed to delete user: ${response.errors.join(', ')}`);
+      } else {
+        showErrorMessage('Failed to delete user');
       }
     });
   });
