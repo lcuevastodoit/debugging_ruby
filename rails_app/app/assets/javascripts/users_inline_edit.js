@@ -1,7 +1,13 @@
-// User inline editing functionality
+// User inline editing and creation functionality
 document.addEventListener('DOMContentLoaded', function() {
   const userForms = document.querySelectorAll('form[data-user-id]');
+  const newUserForm = document.getElementById('new-user-form');
+  const newUserFormContainer = document.getElementById('new-user-form-container');
+  const toggleButton = document.getElementById('toggle-new-user-form');
+  const toggleButtonText = document.getElementById('toggle-button-text');
+  const cancelButton = document.getElementById('cancel-new-user');
   
+  // Handle existing user forms
   userForms.forEach(form => {
     form.addEventListener('ajax:success', function(event) {
       const userId = form.dataset.userId;
@@ -29,6 +35,71 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
+  // Handle new user form toggle
+  if (toggleButton) {
+    toggleButton.addEventListener('click', function() {
+      if (newUserFormContainer.style.display === 'none') {
+        showNewUserForm();
+      } else {
+        hideNewUserForm();
+      }
+    });
+  }
+  
+  // Handle cancel button
+  if (cancelButton) {
+    cancelButton.addEventListener('click', function() {
+      hideNewUserForm();
+      clearNewUserForm();
+    });
+  }
+  
+  // Handle new user form submission
+  if (newUserForm) {
+    newUserForm.addEventListener('ajax:success', function(event) {
+      const response = event.detail[0];
+      showSuccessMessage('User created successfully');
+      hideNewUserForm();
+      clearNewUserForm();
+      // Reload page to show new user
+      window.location.reload();
+    });
+    
+    newUserForm.addEventListener('ajax:error', function(event) {
+      const response = event.detail[0];
+      if (response && response.errors) {
+        showErrorMessage(`Failed to create user: ${response.errors.join(', ')}`);
+      } else {
+        showErrorMessage('Failed to create user');
+      }
+    });
+    
+    newUserForm.addEventListener('submit', function(event) {
+      if (!validateForm(newUserForm)) {
+        event.preventDefault();
+        return false;
+      }
+    });
+  }
+  
+  function showNewUserForm() {
+    newUserFormContainer.style.display = 'block';
+    toggleButtonText.textContent = 'Cancel';
+    newUserForm.querySelector('input[name="user[name]"]').focus();
+  }
+  
+  function hideNewUserForm() {
+    newUserFormContainer.style.display = 'none';
+    toggleButtonText.textContent = 'Add New User';
+  }
+  
+  function clearNewUserForm() {
+    if (newUserForm) {
+      newUserForm.reset();
+    }
+  }
+  
+  // ...existing validation and notification functions...
   function validateForm(form) {
     const nameField = form.querySelector('input[name="user[name]"]');
     const emailField = form.querySelector('input[name="user[email]"]');

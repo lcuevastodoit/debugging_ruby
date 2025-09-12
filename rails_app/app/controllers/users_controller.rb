@@ -28,10 +28,16 @@ class UsersController < ApplicationController
 
     if @user.save
       Rails.logger.info "User created successfully: #{@user.inspect}"
-      redirect_to @user, notice: 'User created successfully'
+      respond_to do |format|
+        format.html { redirect_to users_path, notice: 'User created successfully' }
+        format.js { render json: { status: 'success', message: 'User created successfully', user: @user } }
+      end
     else
       Rails.logger.error "User creation failed: #{@user.errors.full_messages}"
-      render :new
+      respond_to do |format|
+        format.html { render :new }
+        format.js { render json: { status: 'error', errors: @user.errors.full_messages } }
+      end
     end
   end
 
