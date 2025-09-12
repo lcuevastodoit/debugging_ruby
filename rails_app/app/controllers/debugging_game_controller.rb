@@ -61,7 +61,7 @@ class DebuggingGameController < ApplicationController
     respond_to do |format|
       format.turbo_stream { 
         render turbo_stream: turbo_stream.update('monitoring_status', 
-          content_tag(:div, 'Monitoring Active 🟢', class: 'text-green-600 font-medium'))
+          '<div class="text-green-600 font-medium">Monitoring Active 🟢</div>')
       }
       format.html { redirect_to debugging_game_index_path, notice: 'Log monitoring started!' }
     end
@@ -71,7 +71,7 @@ class DebuggingGameController < ApplicationController
     respond_to do |format|
       format.turbo_stream { 
         render turbo_stream: turbo_stream.update('monitoring_status', 
-          content_tag(:div, 'Monitoring Stopped 🔴', class: 'text-red-600 font-medium'))
+          '<div class="text-red-600 font-medium">Monitoring Stopped 🔴</div>')
       }
       format.html { redirect_to debugging_game_index_path, notice: 'Log monitoring stopped!' }
     end

@@ -42,30 +42,6 @@
       </div>
     </div>
   </div>
-    </div>
-
-    <!-- Monitoring Controls -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <div class="flex justify-between items-center">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-800">Log Monitoring</h3>
-          <p class="text-gray-600">Monitor Pry, IRB, debug, and byebug commands</p>
-        </div>
-        <div class="flex space-x-4">
-          <%= button_to "Start Monitoring", start_monitoring_debugging_game_index_path, 
-              method: :post, 
-              class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded",
-              data: { turbo_stream: true } %>
-          <%= button_to "Stop Monitoring", stop_monitoring_debugging_game_index_path, 
-              method: :post, 
-              class: "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded",
-              data: { turbo_stream: true } %>
-          <div id="monitoring_status" class="flex items-center">
-            <span class="text-gray-500">Monitoring Stopped 🔴</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Progress Overview -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

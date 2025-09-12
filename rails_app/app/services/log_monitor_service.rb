@@ -94,6 +94,13 @@ class LogMonitorService
     LogProcessingJob.perform_later(content, tool.to_s)
   end
 
+  def schedule_periodic_jobs
+    # Schedule leaderboard updates every 5 minutes
+    LeaderboardUpdateJob.set(wait: 5.minutes).perform_later
+    
+    Rails.logger.info "Scheduled periodic background jobs"
+  end
+
   def extract_commands(content)
     # Extract meaningful commands from log content
     # This will vary based on the tool's log format
