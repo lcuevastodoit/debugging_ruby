@@ -19,9 +19,6 @@ gem "tailwindcss-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
-# Background job processing
-gem "sidekiq", "~> 7.0"
-
 # Concurrent processing
 gem "concurrent-ruby", "~> 1.2"
 

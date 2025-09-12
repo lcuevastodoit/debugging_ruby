@@ -1,5 +1,5 @@
-class CommandValidationJob
-  include Sidekiq::Job
+class CommandValidationJob < ApplicationJob
+  queue_as :high_priority
 
   def perform(tool, command, timestamp)
     return if command.blank?
