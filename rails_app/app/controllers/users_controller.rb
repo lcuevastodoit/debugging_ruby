@@ -30,13 +30,15 @@ class UsersController < ApplicationController
       Rails.logger.info "User created successfully: #{@user.inspect}"
       respond_to do |format|
         format.html { redirect_to users_path, notice: 'User created successfully' }
-        format.js { render json: { status: 'success', message: 'User created successfully', user: @user } }
+        format.json { render json: { status: 'success', message: 'User created successfully', user: @user } }
+        format.turbo_stream { render json: { status: 'success', message: 'User created successfully', user: @user } }
       end
     else
       Rails.logger.error "User creation failed: #{@user.errors.full_messages}"
       respond_to do |format|
         format.html { render :new }
-        format.js { render json: { status: 'error', errors: @user.errors.full_messages } }
+        format.json { render json: { status: 'error', errors: @user.errors.full_messages } }
+        format.turbo_stream { render json: { status: 'error', errors: @user.errors.full_messages } }
       end
     end
   end
@@ -45,10 +47,12 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.update(user_params)
         format.html { redirect_to users_path, notice: 'User was successfully updated.' }
-        format.js { render json: { status: 'success', message: 'User updated successfully' } }
+        format.json { render json: { status: 'success', message: 'User updated successfully' } }
+        format.turbo_stream { render json: { status: 'success', message: 'User updated successfully' } }
       else
         format.html { render :show }
-        format.js { render json: { status: 'error', errors: @user.errors.full_messages } }
+        format.json { render json: { status: 'error', errors: @user.errors.full_messages } }
+        format.turbo_stream { render json: { status: 'error', errors: @user.errors.full_messages } }
       end
     end
   end
@@ -57,7 +61,8 @@ class UsersController < ApplicationController
     @user.destroy
     respond_to do |format|
       format.html { redirect_to users_path, notice: 'User was successfully deleted.' }
-      format.js { render json: { status: 'success', message: 'User deleted successfully' } }
+      format.json { render json: { status: 'success', message: 'User deleted successfully' } }
+      format.turbo_stream { render json: { status: 'success', message: 'User deleted successfully' } }
     end
   end
 

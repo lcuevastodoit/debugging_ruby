@@ -19,12 +19,12 @@
     <%= form.select :role, options_for_select([['User', 'user'], ['Admin', 'admin']], user.role), {}, { class: "border border-gray-300 rounded p-1 bg-white" } %>
     <div class="flex gap-2">
       <%= form.submit "Save", class: "bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600" %>
-      <%= link_to "Delete", user_path(user), 
+      <%= button_to "Delete", user_path(user), 
           method: :delete, 
           remote: true,
           confirm: "Are you sure you want to delete #{user.name}? This action cannot be undone.",
-          class: "bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 inline-block text-center",
-          data: { user_id: user.id } %>
+          class: "bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600",
+          form: { class: "inline-block", data: { user_id: user.id } } %>
     </div>
   </div>
 <% end %>

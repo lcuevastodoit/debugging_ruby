@@ -1,66 +1,115 @@
 // User inline editing and creation functionality
 document.addEventListener('DOMContentLoaded', function() {
   const userForms = document.querySelectorAll('form[data-user-id]');
-  const deleteLinks = document.querySelectorAll('a[data-method="delete"]');
   const newUserForm = document.getElementById('new-user-form');
   const newUserFormContainer = document.getElementById('new-user-form-container');
   const toggleButton = document.getElementById('toggle-new-user-form');
   const toggleButtonText = document.getElementById('toggle-button-text');
   const cancelButton = document.getElementById('cancel-new-user');
   
-  // Handle existing user forms
+  // Handle existing user forms (edit forms)
   userForms.forEach(form => {
-    form.addEventListener('ajax:success', function(event) {
-      const userId = form.dataset.userId;
-      const response = event.detail[0];
-      showSuccessMessage(response.message || `User ${userId} updated successfully`);
-    });
+    // Handle both ajax and turbo events
+    form.addEventListener('ajax:success', handleFormSuccess);
+    form.addEventListener('turbo:submit-end', handleTurboSuccess);
+    form.addEventListener('ajax:error', handleFormError);
+    form.addEventListener('turbo:submit-error', handleTurboError);
     
-    form.addEventListener('ajax:error', function(event) {
-      const userId = form.dataset.userId;
-      const response = event.detail[0];
-      
-      if (response && response.errors) {
-        showErrorMessage(`Failed to update user: ${response.errors.join(', ')}`);
-      } else {
-        showErrorMessage(`Failed to update user ${userId}`);
-      }
-    });
-    
-    // Add form validation before submission
-    form.addEventListener('submit', function(event) {
-      if (!validateForm(form)) {
-        event.preventDefault();
-        return false;
-      }
-    });
+    // Add form validation before submission for edit forms only
+    if (form.querySelector('input[name="_method"][value="patch"]')) {
+      form.addEventListener('submit', function(event) {
+        if (!validateForm(form)) {
+          event.preventDefault();
+          return false;
+        }
+      });
+    }
   });
   
-  // Handle delete links
-  deleteLinks.forEach(link => {
-    link.addEventListener('ajax:success', function(event) {
-      const response = event.detail[0];
-      showSuccessMessage(response.message || 'User deleted successfully');
-      // Remove the user row from the DOM
-      const userRow = link.closest('form');
-      if (userRow) {
-        userRow.style.transition = 'opacity 0.3s ease-out';
-        userRow.style.opacity = '0';
-        setTimeout(() => {
-          userRow.remove();
-        }, 300);
-      }
-    });
+  // Handle delete forms using event delegation
+  document.addEventListener('ajax:success', function(event) {
+    handleDeleteSuccess(event);
+  });
+  
+  document.addEventListener('turbo:submit-end', function(event) {
+    handleDeleteTurboSuccess(event);
+  });
+  
+  document.addEventListener('ajax:error', function(event) {
+    handleDeleteError(event);
+  });
+  
+  function handleFormSuccess(event) {
+    const userId = event.target.dataset.userId;
+    const response = event.detail && event.detail[0] ? event.detail[0] : {};
+    showSuccessMessage(response.message || `User ${userId} updated successfully`);
+  }
+  
+  function handleTurboSuccess(event) {
+    if (event.detail.success) {
+      const userId = event.target.dataset.userId;
+      showSuccessMessage(`User ${userId} updated successfully`);
+    }
+  }
+  
+  function handleFormError(event) {
+    const userId = event.target.dataset.userId;
+    const response = event.detail && event.detail[0] ? event.detail[0] : {};
     
-    link.addEventListener('ajax:error', function(event) {
-      const response = event.detail[0];
+    if (response && response.errors) {
+      showErrorMessage(`Failed to update user: ${response.errors.join(', ')}`);
+    } else {
+      showErrorMessage(`Failed to update user ${userId}`);
+    }
+  }
+  
+  function handleTurboError(event) {
+    const userId = event.target.dataset.userId;
+    showErrorMessage(`Failed to update user ${userId}`);
+  }
+  
+  function handleDeleteSuccess(event) {
+    const target = event.target;
+    if (target.matches('form[action*="users/"][data-user-id]') && target.querySelector('input[name="_method"][value="delete"]')) {
+      const response = event.detail && event.detail[0] ? event.detail[0] : {};
+      showSuccessMessage(response.message || 'User deleted successfully');
+      removeUserRow(target);
+    }
+  }
+  
+  function handleDeleteTurboSuccess(event) {
+    const target = event.target;
+    if (target.matches('form[action*="users/"][data-user-id]') && target.querySelector('input[name="_method"][value="delete"]')) {
+      if (event.detail.success) {
+        showSuccessMessage('User deleted successfully');
+        removeUserRow(target);
+      }
+    }
+  }
+  
+  function handleDeleteError(event) {
+    const target = event.target;
+    if (target.matches('form[action*="users/"][data-user-id]') && target.querySelector('input[name="_method"][value="delete"]')) {
+      const response = event.detail && event.detail[0] ? event.detail[0] : {};
       if (response && response.errors) {
         showErrorMessage(`Failed to delete user: ${response.errors.join(', ')}`);
       } else {
         showErrorMessage('Failed to delete user');
       }
-    });
-  });
+    }
+  }
+  
+  function removeUserRow(deleteForm) {
+    // Find the parent user row (the edit form)
+    const userRow = deleteForm.closest('.grid').querySelector('form[data-user-id]');
+    if (userRow && userRow !== deleteForm) {
+      userRow.style.transition = 'opacity 0.3s ease-out';
+      userRow.style.opacity = '0';
+      setTimeout(() => {
+        userRow.parentElement.remove(); // Remove the entire grid container
+      }, 300);
+    }
+  }
   
   // Handle new user form toggle
   if (toggleButton) {
@@ -84,16 +133,24 @@ document.addEventListener('DOMContentLoaded', function() {
   // Handle new user form submission
   if (newUserForm) {
     newUserForm.addEventListener('ajax:success', function(event) {
-      const response = event.detail[0];
+      const response = event.detail && event.detail[0] ? event.detail[0] : {};
       showSuccessMessage('User created successfully');
       hideNewUserForm();
       clearNewUserForm();
-      // Reload page to show new user
       window.location.reload();
     });
     
+    newUserForm.addEventListener('turbo:submit-end', function(event) {
+      if (event.detail.success) {
+        showSuccessMessage('User created successfully');
+        hideNewUserForm();
+        clearNewUserForm();
+        window.location.reload();
+      }
+    });
+    
     newUserForm.addEventListener('ajax:error', function(event) {
-      const response = event.detail[0];
+      const response = event.detail && event.detail[0] ? event.detail[0] : {};
       if (response && response.errors) {
         showErrorMessage(`Failed to create user: ${response.errors.join(', ')}`);
       } else {
@@ -126,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // ...existing validation and notification functions...
   function validateForm(form) {
     const nameField = form.querySelector('input[name="user[name]"]');
     const emailField = form.querySelector('input[name="user[email]"]');
@@ -134,12 +190,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isValid = true;
     let errors = [];
     
-    if (!nameField.value.trim()) {
+    if (!nameField || !nameField.value.trim()) {
       errors.push('Name is required');
       isValid = false;
     }
     
-    if (!emailField.value.trim()) {
+    if (!emailField || !emailField.value.trim()) {
       errors.push('Email is required');
       isValid = false;
     } else if (!isValidEmail(emailField.value)) {
