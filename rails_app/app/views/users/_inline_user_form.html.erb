@@ -1,5 +1,5 @@
 <%# Inline form partial for user editing %>
-<%= form_with model: user, local: false, html: { 
+<%= form_with model: user, local: false, html: {
   class: "grid grid-cols-3 items-center border-t py-4 px-4 #{row_class} hover:bg-gray-100",
   data: { remote: true, user_id: user.id }
 } do |form| %>

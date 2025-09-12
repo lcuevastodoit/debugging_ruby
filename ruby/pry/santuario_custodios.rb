@@ -2,7 +2,7 @@ prompt = <<-TEXT
 Ejercicio Pry #2 (Avanzado) - El Santuario de los Custodios
 
 Comandos a practicar: load, watch, cd, ls, whereami, show-method del REPL Pry
-Eres un investigador arcano atrapado en el Santuario de los Custodios, donde los artefactos antiguos 
+Eres un investigador arcano atrapado en el Santuario de los Custodios, donde los artefactos antiguos
 corrompen a quienes intentan dominarlos.
 
 ⚠️ DEBES USAR PRY como REPL principal

@@ -15,13 +15,13 @@
       <% @users.each_with_index do |user, index| %>
         <%= render 'inline_user_form', user: user, row_class: (index.even? ? 'bg-white' : 'bg-gray-50') %>
       <% end %>
-      
+
       <div id="new-user-form-container" style="display: none;">
         <%= render 'inline_new_user_form' %>
       </div>
     </div>
   </div>
-  
+
   <div class="p-6 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 flex justify-end">
     <button id="toggle-new-user-form" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition shadow-sm flex items-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
