@@ -19,6 +19,22 @@ class DebuggingGameController < ApplicationController
 
   def show
     @objective_key = params[:objective_key]
+    
+    # Ensure objectives are loaded - fix Config::Options to hash conversion
+    @all_objectives = Settings.debugging_game.objectives.map do |obj|
+      {
+        'key' => obj.key,
+        'title' => obj.title,
+        'description' => obj.description,
+        'expected_commands' => obj.expected_commands&.to_a || [],
+        'points' => obj.points,
+        'level' => obj.level,
+        'problem' => obj.problem,
+        'hints' => obj.hints&.to_a || [],
+        'time_limit' => obj.time_limit,
+        'prerequisites' => obj.prerequisites&.to_a || []
+      }
+    end
     @objective = @all_objectives.find { |obj| obj['key'] == @objective_key }
 
     return redirect_to debugging_game_index_path, alert: 'Objective not found.' unless @objective
@@ -169,7 +185,20 @@ class DebuggingGameController < ApplicationController
       )
     end
 
-    @all_objectives = Settings.debugging_game.objectives.map(&:to_h)
+    @all_objectives = Settings.debugging_game.objectives.map do |obj|
+      {
+        'key' => obj.key,
+        'title' => obj.title,
+        'description' => obj.description,
+        'expected_commands' => obj.expected_commands&.to_a || [],
+        'points' => obj.points,
+        'level' => obj.level,
+        'problem' => obj.problem,
+        'hints' => obj.hints&.to_a || [],
+        'time_limit' => obj.time_limit,
+        'prerequisites' => obj.prerequisites&.to_a || []
+      }
+    end
     @objectives_by_level = @all_objectives.group_by { |obj| obj['level'] }
   end
 
