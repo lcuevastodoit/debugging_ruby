@@ -347,4 +347,19 @@ class DebuggingGameController < ApplicationController
   def calculate_most_popular_level
     GameProgress.group(:current_level).count.max_by { |level, count| count }&.first || 'rookie'
   end
+
+  def test_job
+    message = params[:message] || "Test from web interface at #{Time.current}"
+    
+    # Enqueue immediate job
+    TestJob.perform_later(message)
+    
+    # Enqueue delayed job (in 10 seconds)
+    TestJob.set(wait: 10.seconds).perform_later("Delayed: #{message}")
+    
+    render json: { 
+      status: 'success', 
+      message: 'Jobs enqueued successfully! Check Mission Control at /jobs'
+    }
+  end
 end

@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       get :objective, to: 'debugging_game#show'
       get :live_status
       post :get_hint
+      post :test_job
     end
   end
 
@@ -19,6 +20,9 @@ Rails.application.routes.draw do
   resources :users, only: [:index, :show, :new, :create]
 
   get 'debug_error', to: 'users#index', defaults: { debug: 'error' }
+
+  # Mission Control Jobs web interface
+  mount MissionControl::Jobs::Engine, at: "/jobs"
 
   get "up" => "rails/health#show", as: :rails_health_check
 end

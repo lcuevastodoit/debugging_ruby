@@ -235,7 +235,7 @@ user_stats:
 
 ## IA tips
 -  Puedes usar comandos como curl, cat, ls, Rails.runner, ruby, irb, pry y otros desde el terminal para ir confirmando el estado y progreso de los cambios.
-
+-  En caso de errores en las pruebas busca primero compobar que la funcionalidad que estas probando esta bien implementada y luego ve si es el test.
 ---
 
 ## 📚 Recursos Adicionales

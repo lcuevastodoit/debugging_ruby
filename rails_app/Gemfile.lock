@@ -206,6 +206,16 @@ GEM
     matrix (0.4.3)
     mini_mime (1.1.5)
     minitest (5.25.5)
+    mission_control-jobs (1.1.0)
+      actioncable (>= 7.1)
+      actionpack (>= 7.1)
+      activejob (>= 7.1)
+      activerecord (>= 7.1)
+      importmap-rails (>= 1.2.1)
+      irb (~> 1.13)
+      railties (>= 7.1)
+      stimulus-rails
+      turbo-rails
     msgpack (1.8.0)
     net-imap (0.5.10)
       date
@@ -446,6 +456,7 @@ DEPENDENCIES
   jbuilder
   kamal
   listen (~> 3.8)
+  mission_control-jobs
   propshaft
   puma (>= 5.0)
   rails (~> 8.0.2, >= 8.0.2.1)

@@ -78,4 +78,7 @@ Rails.application.configure do
 
   # Para web console
   config.web_console.whitelisted_ips = '0.0.0.0/0'
+
+  # Mission Control Jobs configuration for development - disable auth for dev
+  config.mission_control.jobs.http_basic_auth_enabled = false
 end
