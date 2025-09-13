@@ -20,7 +20,10 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
+  # Use null_store for tests to avoid persistent caching during test runs
   config.cache_store = :null_store
+  # Alternative: Use Solid Cache in tests (uncomment the line below if needed)
+  # config.cache_store = :solid_cache_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
