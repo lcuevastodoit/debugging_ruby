@@ -15,8 +15,9 @@ export RUBY_DEBUG_LAZY="true"
 
 # Create a Procfile.dev for foreman to manage both Rails and Tailwind processes
 cat > Procfile.dev << EOL
-web: rails server -b 0.0.0.0 -p \${PORT:-3000}
-css: bin/tailwindcss
+web: bin/rails server -b 0.0.0.0 -p ${PORT:-3000}
+css: bin/rails tailwindcss:watch
+solid_queue: bin/rails solid_queue:start
 EOL
 
 # Use foreman to start both processes

@@ -306,7 +306,6 @@ debugging_game:
     debug: "~/.local/state/rdbg/history"
     irb: "~/.irb_history"
     byebug: "~/.byebug_history"
-    rails: "log/development.log"
 
   scoring:
     time_bonus:

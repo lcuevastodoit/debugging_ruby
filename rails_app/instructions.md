@@ -24,7 +24,6 @@ El servicio de background debe leer los logs generados por consolas interactivas
 | **debug** | `~/.local/state/rdbg/history` |
 | **IRB** | `~/.irb_history` |
 | **byebug** | `~/.byebug_history` |
-| **Rails** | `rails-app/log/development.log` |
 
 ### 🔒 Consideraciones de Seguridad
 

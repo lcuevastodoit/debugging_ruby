@@ -21,9 +21,9 @@ class LogMonitorService
         next
       end
 
-      # Use lighter monitoring with background job processing
+      # Monitorea usando tail -f y lee stdout en tiempo real
       future = Concurrent::Future.execute do
-        monitor_log_file_lightweight(expanded_path, tool.to_s)
+        monitor_log_file_tail(tool.to_s, expanded_path)
       end
 
       @futures << future
@@ -32,7 +32,7 @@ class LogMonitorService
     # Schedule periodic leaderboard updates
     schedule_periodic_jobs
 
-    Rails.logger.info "Started monitoring #{@futures.length} log files with background processing"
+    Rails.logger.info "Started monitoring #{@futures.length} log files with tail -f background processing"
   end
 
   def stop_monitoring
@@ -48,6 +48,26 @@ class LogMonitorService
 
   private
 
+  # Nuevo método para monitorear usando tail -f
+  def monitor_log_file_tail(tool, file_path)
+    begin
+      Rails.logger.info "[LogMonitorService] Monitoring #{tool} log with tail -F: #{file_path}"
+      IO.popen(["tail", "-F", file_path]) do |io|
+        while @monitoring && !io.eof?
+          line = io.gets
+          Rails.logger.info "[LogMonitorService] Detected new line in #{tool}: '#{line&.strip}'"
+          next if line.nil? || line.strip.empty?
+          process_new_commands(tool, line)
+        end
+      end
+    rescue => e
+      Rails.logger.error "Error monitoring #{tool} log with tail -f: #{e.message}"
+      sleep 5
+      retry if @monitoring
+    end
+  end
+
+  # Se deja el método anterior por compatibilidad si se requiere
   def monitor_log_file_async(tool, file_path)
     Concurrent::Future.execute do
       monitor_log_file(tool, file_path)
@@ -90,6 +110,7 @@ class LogMonitorService
   end
 
   def process_new_commands(tool, content)
+    Rails.logger.info "[LogMonitorService] Enqueuing LogProcessingJob for #{tool}: '#{content&.strip}'"
     # Use background job for heavy processing instead of inline processing
     LogProcessingJob.perform_later(content, tool.to_s)
   end
