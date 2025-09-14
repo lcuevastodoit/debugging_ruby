@@ -19,7 +19,7 @@ class DebuggingGameController < ApplicationController
 
   def show
     @objective_key = params[:objective_key]
-    
+
     # Ensure objectives are loaded - fix Config::Options to hash conversion
     @all_objectives = Settings.debugging_game.objectives.map do |obj|
       {
