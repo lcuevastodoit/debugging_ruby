@@ -1,13 +1,36 @@
 class CommandValidationService
+  # Configuración del logger personalizado
+  def self.logger
+    @logger ||= begin
+      # Crear el directorio log si no existe
+      FileUtils.mkdir_p(Rails.root.join("log"))
+
+      # Crear o usar el archivo log/command_validation.log
+      log_file = File.open(Rails.root.join("log", "command_validation.log"), "a")
+      log_file.sync = true # Para que escriba inmediatamente sin buffer
+
+      # Crear un logger personalizado
+      logger = ActiveSupport::Logger.new(log_file)
+
+      # Usar el mismo formato que Rails.logger
+      logger.formatter = Rails.logger.formatter.clone
+
+      # Configurar nivel de log igual que Rails
+      logger.level = Rails.logger.level
+
+      logger
+    end
+  end
+
   def self.validate(tool, command, timestamp)
     return if command.blank?
 
-    Rails.logger.info "[CommandValidationService] Processing command from #{tool}: #{command}"
+    logger.info "[CommandValidationService] Processing command from #{tool}: #{command}"
 
     # Find current active users (those who played recently)
     active_users = User.joins(:game_progress)
                       .where('game_progresses.last_played_at > ?', 1.hour.ago)
-    Rails.logger.info "[CommandValidationService] Active users: #{active_users.map(&:id)}"
+    logger.info "[CommandValidationService] Active users: #{active_users.map(&:id)}"
 
     active_users.each do |user|
       process_command_for_user(user, tool, command, timestamp)
@@ -20,17 +43,17 @@ class CommandValidationService
 
     # Get current level objectives
     current_objectives = objectives_for_level(game_progress.current_level)
-    Rails.logger.info "[CommandValidationService] User #{user.id} current objectives: #{current_objectives.map { |o| o['key'] }}"
+    logger.info "[CommandValidationService] User #{user.id} current objectives: #{current_objectives.map { |o| o['key'] }}"
 
     # Find incomplete objectives for this user
     incomplete_objectives = current_objectives.reject do |obj|
       game_progress.objective_completed?(obj['key'])
     end
-    Rails.logger.info "[CommandValidationService] User #{user.id} incomplete objectives: #{incomplete_objectives.map { |o| o['key'] }}"
+    logger.info "[CommandValidationService] User #{user.id} incomplete objectives: #{incomplete_objectives.map { |o| o['key'] }}"
 
     incomplete_objectives.each do |objective|
       if command_matches_objective?(command, objective)
-        Rails.logger.info "[CommandValidationService] Command '#{command}' matches objective #{objective['key']} for user #{user.id}"
+        logger.info "[CommandValidationService] Command '#{command}' matches objective #{objective['key']} for user #{user.id}"
         complete_objective_for_user(user, objective, tool, timestamp)
         break # Only complete one objective per command
       end
@@ -87,7 +110,7 @@ class CommandValidationService
 
     # Calculate points (base points + bonuses)
     points = calculate_points(objective, timestamp, game_progress)
-    Rails.logger.info "[CommandValidationService] Completing objective #{objective['key']} for user #{user.id}, points: #{points}"
+    logger.info "[CommandValidationService] Completing objective #{objective['key']} for user #{user.id}, points: #{points}"
 
     # Update progress
     game_progress.mark_objective_completed(objective['key'])
@@ -103,7 +126,7 @@ class CommandValidationService
     # Broadcast update to UI
     broadcast_progress_update(user, objective, points, tool)
 
-    Rails.logger.info "User #{user.id} completed objective #{objective['key']} for #{points} points"
+    logger.info "User #{user.id} completed objective #{objective['key']} for #{points} points"
   end
 
   def self.calculate_points(objective, timestamp, game_progress)
@@ -183,11 +206,11 @@ class CommandValidationService
       }
     )
 
-    Rails.logger.info "Broadcasting: User #{user.id} completed #{objective['key']} (+#{points} pts) via #{tool}"
+    logger.info "Broadcasting: User #{user.id} completed #{objective['key']} (+#{points} pts) via #{tool}"
   end
 
   def self.broadcast_level_up(user, new_level)
     # This will be implemented when we add Turbo Streams
-    Rails.logger.info "Broadcasting level up for user #{user.id} to #{new_level}"
+    logger.info "Broadcasting level up for user #{user.id} to #{new_level}"
   end
 end
