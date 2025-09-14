@@ -1,43 +1,43 @@
-class CommandValidationJob < ApplicationJob
-  queue_as :high_priority
-
-  def perform(tool, command, timestamp)
+class CommandValidationService
+  def self.validate(tool, command, timestamp)
     return if command.blank?
 
-    Rails.logger.info "Processing command from #{tool}: #{command}"
+    Rails.logger.info "[CommandValidationService] Processing command from #{tool}: #{command}"
 
     # Find current active users (those who played recently)
     active_users = User.joins(:game_progress)
                       .where('game_progresses.last_played_at > ?', 1.hour.ago)
+    Rails.logger.info "[CommandValidationService] Active users: #{active_users.map(&:id)}"
 
     active_users.each do |user|
       process_command_for_user(user, tool, command, timestamp)
     end
   end
 
-  private
-
-  def process_command_for_user(user, tool, command, timestamp)
+  def self.process_command_for_user(user, tool, command, timestamp)
     game_progress = user.game_progress
     return unless game_progress
 
     # Get current level objectives
     current_objectives = objectives_for_level(game_progress.current_level)
+    Rails.logger.info "[CommandValidationService] User #{user.id} current objectives: #{current_objectives.map { |o| o['key'] }}"
 
     # Find incomplete objectives for this user
     incomplete_objectives = current_objectives.reject do |obj|
       game_progress.objective_completed?(obj['key'])
     end
+    Rails.logger.info "[CommandValidationService] User #{user.id} incomplete objectives: #{incomplete_objectives.map { |o| o['key'] }}"
 
     incomplete_objectives.each do |objective|
       if command_matches_objective?(command, objective)
+        Rails.logger.info "[CommandValidationService] Command '#{command}' matches objective #{objective['key']} for user #{user.id}"
         complete_objective_for_user(user, objective, tool, timestamp)
         break # Only complete one objective per command
       end
     end
   end
 
-  def command_matches_objective?(command, objective)
+  def self.command_matches_objective?(command, objective)
     expected_commands = objective['expected_commands'] || []
 
     expected_commands.any? do |expected|
@@ -48,7 +48,7 @@ class CommandValidationJob < ApplicationJob
       when 'inspect', '@user.inspect'
         command.match?(/\.inspect|inspect\s*$|^inspect/i)
       when 'p @user', 'p'
-        command.match?(/^p\s+|^p$/)
+        command.match?(/^p\s+|^p$/i)
       when 'save'
         command.match?(/\.save|^save/i)
       when 'post.new'
@@ -82,11 +82,12 @@ class CommandValidationJob < ApplicationJob
     end
   end
 
-  def complete_objective_for_user(user, objective, tool, timestamp)
+  def self.complete_objective_for_user(user, objective, tool, timestamp)
     game_progress = user.game_progress
 
     # Calculate points (base points + bonuses)
     points = calculate_points(objective, timestamp, game_progress)
+    Rails.logger.info "[CommandValidationService] Completing objective #{objective['key']} for user #{user.id}, points: #{points}"
 
     # Update progress
     game_progress.mark_objective_completed(objective['key'])
@@ -105,7 +106,7 @@ class CommandValidationJob < ApplicationJob
     Rails.logger.info "User #{user.id} completed objective #{objective['key']} for #{points} points"
   end
 
-  def calculate_points(objective, timestamp, game_progress)
+  def self.calculate_points(objective, timestamp, game_progress)
     base_points = objective['points'] || 100
 
     # Time bonus (if objective has time_limit)
@@ -134,7 +135,7 @@ class CommandValidationJob < ApplicationJob
     (base_points * time_bonus * streak_bonus).round
   end
 
-  def check_level_up(game_progress)
+  def self.check_level_up(game_progress)
     levels = Settings.debugging_game.levels.to_h
     current_level_index = GameProgress::LEVELS.index(game_progress.current_level)
     return if current_level_index.nil? || current_level_index >= GameProgress::LEVELS.length - 1
@@ -151,11 +152,11 @@ class CommandValidationJob < ApplicationJob
     end
   end
 
-  def objectives_for_level(level)
+  def self.objectives_for_level(level)
     Settings.debugging_game.objectives.select { |obj| obj['level'] == level }
   end
 
-  def broadcast_progress_update(user, objective, points, tool)
+  def self.broadcast_progress_update(user, objective, points, tool)
     # Broadcast real-time updates via Turbo Streams
     Turbo::StreamsChannel.broadcast_update_to(
       "user_#{user.id}_progress",
@@ -185,7 +186,7 @@ class CommandValidationJob < ApplicationJob
     Rails.logger.info "Broadcasting: User #{user.id} completed #{objective['key']} (+#{points} pts) via #{tool}"
   end
 
-  def broadcast_level_up(user, new_level)
+  def self.broadcast_level_up(user, new_level)
     # This will be implemented when we add Turbo Streams
     Rails.logger.info "Broadcasting level up for user #{user.id} to #{new_level}"
   end

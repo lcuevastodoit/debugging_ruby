@@ -7,8 +7,19 @@ class LogMonitorService
     @log_locations = Settings.debugging_game.log_locations.to_h
   end
 
+  # Limpia todos los datos: logs, progreso de usuarios y leaderboard
+  def reset_all_data
+    reset_log_files
+    reset_user_progress
+    reset_leaderboard
+    Rails.logger.info "✅ All data has been reset successfully"
+  end
+
   def start_monitoring
     return if @monitoring
+
+    # Resetear todos los datos al iniciar el monitoreo
+    reset_all_data
 
     @monitoring = true
     @futures = []
@@ -48,7 +59,74 @@ class LogMonitorService
 
   private
 
-  # Nuevo método para monitorear usando tail -f
+  # Borrar archivos de log que estamos monitoreando
+  def reset_log_files
+    Rails.logger.info "🔄 Resetting log files..."
+    
+    @log_locations.each do |tool, location|
+      expanded_path = File.expand_path(location)
+      
+      if File.exist?(expanded_path)
+        # Truncar el archivo en lugar de eliminarlo para mantener permisos
+        File.truncate(expanded_path, 0)
+        Rails.logger.info "✅ Truncated log file: #{expanded_path}"
+      else
+        # Crear directorio si es necesario
+        dir = File.dirname(expanded_path)
+        FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
+        
+        # Crear archivo vacío
+        FileUtils.touch(expanded_path)
+        Rails.logger.info "✅ Created empty log file: #{expanded_path}"
+      end
+    end
+  end
+  
+  # Resetear el progreso de los usuarios
+  def reset_user_progress
+    Rails.logger.info "🔄 Resetting user progress..."
+    
+    # Borrar todos los registros de progreso
+    count = GameProgress.delete_all
+    Rails.logger.info "✅ Deleted #{count} game progress records"
+    
+    # Reiniciar usuarios a estado inicial si es necesario
+    User.find_each do |user|
+      # Crear nuevo progreso para cada usuario
+      GameProgress.create!(
+        user: user,
+        current_level: GameProgress::LEVELS.first,
+        total_points: 0,
+        current_streak: 0,
+        longest_streak: 0,
+        completed_objectives: [],
+        last_played_at: Time.current
+      )
+    end
+    
+    Rails.logger.info "✅ Created fresh game progress for #{User.count} users"
+  end
+  
+  # Resetear el leaderboard
+  def reset_leaderboard
+    Rails.logger.info "🔄 Resetting leaderboard..."
+    
+    # Dependiendo de cómo esté implementado el leaderboard
+    # Puede ser una tabla separada o calculada desde GameProgress
+    if defined?(Leaderboard) && Leaderboard.respond_to?(:delete_all)
+      Leaderboard.delete_all
+      Rails.logger.info "✅ Leaderboard data cleared"
+    else
+      # Si el leaderboard se calcula a partir de GameProgress
+      # ya está reseteado al limpiar GameProgress
+      Rails.logger.info "✅ Leaderboard will be recalculated from fresh game progress"
+    end
+    
+    # Forzar actualización del leaderboard
+    LeaderboardUpdateJob.perform_now if defined?(LeaderboardUpdateJob)
+  end
+
+  # Método para monitorear usando tail -f
   def monitor_log_file_tail(tool, file_path)
     begin
       Rails.logger.info "[LogMonitorService] Monitoring #{tool} log with tail -F: #{file_path}"

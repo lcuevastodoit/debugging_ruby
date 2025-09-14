@@ -90,15 +90,14 @@ class LogProcessingJob < ApplicationJob
     return if commands_batch.empty?
 
     commands_batch.each do |command_data|
-      # Enqueue individual command validation jobs
-      CommandValidationJob.perform_later(
-        command_data[:user_id],
-        command_data[:command],
+      # Process commands in real-time using CommandValidationService
+      CommandValidationService.validate(
         command_data[:tool],
+        command_data[:command],
         command_data[:timestamp]
       )
     end
 
-    Rails.logger.info "Enqueued #{commands_batch.length} command validation jobs"
+    Rails.logger.info "Processed #{commands_batch.length} commands in real-time with CommandValidationService"
   end
 end
