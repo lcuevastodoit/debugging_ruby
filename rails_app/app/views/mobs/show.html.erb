@@ -17,14 +17,27 @@
             <p class="card-text"><%= @mob.description %></p>
           </div>
 
-          <!-- Wiki Information -->
+          <!-- Wiki Description -->
           <% if @wiki_info[:found] %>
             <div class="mb-4">
               <h5 class="text-primary">
-                <i class="fas fa-external-link-alt"></i>
-                Minecraft Wiki Information:
+                <i class="fas fa-book-open"></i>
+                Wiki Description:
               </h5>
               <div class="alert alert-info">
+                <p class="mb-0"><%= @wiki_info[:description] %></p>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Additional Wiki Information -->
+          <% if @wiki_info[:found] && @wiki_info[:extract] != @wiki_info[:description] %>
+            <div class="mb-4">
+              <h5 class="text-primary">
+                <i class="fas fa-external-link-alt"></i>
+                Additional Wiki Information:
+              </h5>
+              <div class="alert alert-light">
                 <p class="mb-0"><%= @wiki_info[:extract] %></p>
               </div>
             </div>

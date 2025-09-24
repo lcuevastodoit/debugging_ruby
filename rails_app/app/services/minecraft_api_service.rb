@@ -63,6 +63,7 @@ class MinecraftApiService
 
     {
       title: page_data['title'] || mob_name,
+      description: clean_extract(page_data['extract']),
       extract: clean_extract(page_data['extract']),
       images: parse_images(page_data['images'] || []),
       found: page_data['extract'].present?
@@ -116,6 +117,7 @@ class MinecraftApiService
   def self.default_mob_info(mob_name)
     {
       title: mob_name,
+      description: "This is a Minecraft mob. No additional information available from the wiki.",
       extract: "This is a Minecraft mob. No additional information available from the wiki.",
       images: [],
       found: false
