@@ -34,19 +34,19 @@ class MobsController < ApplicationController
 
   def show
     @mob = Mob.find(params[:id])
-    
+
     # Get additional information from Minecraft Fandom API
     @wiki_info = MinecraftApiService.get_mob_info(@mob.name)
-    
+
     # Debug options for API testing
     if params[:pry] == 'true'
       binding.pry if defined?(Pry)
     end
-    
+
     if params[:debugger] == 'true'
       binding.break
     end
-    
+
   rescue ActiveRecord::RecordNotFound
     redirect_to mobs_path, alert: "Mob not found"
   end

@@ -21,7 +21,7 @@
           <% if @wiki_info[:found] %>
             <div class="mb-4">
               <h5 class="text-primary">
-                <i class="fas fa-external-link-alt"></i> 
+                <i class="fas fa-external-link-alt"></i>
                 Minecraft Wiki Information:
               </h5>
               <div class="alert alert-info">
@@ -56,15 +56,15 @@
           <% if @wiki_info[:images].present? %>
             <div class="mt-4">
               <h5 class="text-primary">
-                <i class="fas fa-images"></i> 
+                <i class="fas fa-images"></i>
                 Wiki Images:
               </h5>
               <div class="row">
                 <% @wiki_info[:images].each do |image| %>
                   <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card">
-                      <img src="<%= image[:url] %>" 
-                           class="card-img-top" 
+                      <img src="<%= image[:url] %>"
+                           class="card-img-top"
                            alt="<%= image[:title] %>"
                            style="height: 150px; object-fit: cover;"
                            onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}">
@@ -84,7 +84,7 @@
         <div class="card-footer">
           <%= link_to "← Back to Mobs", mobs_path, class: "btn btn-secondary" %>
           <%= link_to "Debug Error", debug_error_mobs_path, class: "btn btn-warning" %>
-          
+
           <!-- Debug API URLs -->
           <div class="btn-group ms-2" role="group">
             <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-bs-toggle="dropdown">

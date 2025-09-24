@@ -1,15 +1,15 @@
 Rails.application.routes.draw do
   root "mobs#index"
-  
+
   resources :mobs, only: [:index, :show] do
     collection do
       get :debug_error
     end
   end
-  
+
   # Image proxy route
   get 'image_proxy', to: 'application#image_proxy'
-  
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
