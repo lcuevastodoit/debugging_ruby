@@ -5,7 +5,7 @@
 # Create Minecraft mobs for debugging exercises
 minecraft_mobs = [
   {
-    name: "Zombie",
+    name: "Zombi",
     health: 20,
     attack: 3,
     defense: 0,
@@ -33,14 +33,14 @@ minecraft_mobs = [
     description: "A neutral mob that teleports and becomes hostile when looked at directly."
   },
   {
-    name: "Spider",
+    name: "Araña",
     health: 16,
     attack: 2,
     defense: 0,
     description: "A neutral mob that becomes hostile in dark areas and can climb walls."
   },
   {
-    name: "Witch",
+    name: "Bruja",
     health: 26,
     attack: 6,
     defense: 0,
