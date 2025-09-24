@@ -60,7 +60,7 @@ class ApplicationController < ActionController::Base
         when Net::HTTPSuccess
           # Save image to cache
           save_to_cache(cached_path, response.body)
-          
+
           # Send the image data with proper content type
           send_data response.body,
                     type: response.content_type || 'image/png',
@@ -84,7 +84,7 @@ class ApplicationController < ActionController::Base
     # Extract original filename if possible, otherwise use hash
     uri = URI(url)
     original_name = File.basename(uri.path)
-    
+
     if original_name.present? && original_name.include?('.')
       # Use original filename with hash prefix to avoid conflicts
       hash_prefix = Digest::MD5.hexdigest(url)[0..7]
@@ -98,12 +98,12 @@ class ApplicationController < ActionController::Base
   def save_to_cache(file_path, content)
     # Ensure the cached_images directory exists
     FileUtils.mkdir_p(File.dirname(file_path))
-    
+
     # Write the file
     File.open(file_path, 'wb') do |file|
       file.write(content)
     end
-    
+
     Rails.logger.info "Cached image saved: #{File.basename(file_path)}"
   rescue => e
     Rails.logger.error "Failed to cache image: #{e.message}"
