@@ -1,10 +1,34 @@
 class MobsController < ApplicationController
   def index
     @mobs = Mob.all
-    
+
     # Debug partial parameter for testing
-    if params[:debug_partial] == 'true'
+    if params[:pry] == 'true'
       binding.pry if defined?(Pry)
+    end
+
+    if params[:debugger] == 'true'
+      binding.break
+    end
+
+    # variables y asignaciones de ejemplo para practicar con debugger en vscode
+    a = 1
+    b = 2
+    c = 3
+    d = 4
+    e = 5
+    f = 6
+    pi = Math::PI
+    phi = (1 + Math.sqrt(5)) / 2
+    eulers_number = Math::E
+    golden_ratio = phi
+
+    if params[:byebug] == 'true'
+      byebug
+    end
+
+    if params[:irb] == 'true'
+      irb
     end
   end
 

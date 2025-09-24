@@ -387,6 +387,7 @@ PLATFORMS
 DEPENDENCIES
   bootsnap
   brakeman
+  byebug
   capybara
   cssbundling-rails
   debug
