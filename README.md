@@ -29,18 +29,18 @@ Este repositorio es para fines educativos y sigue principios de código abierto.
 
 ## 2. RAILS DEBUGGING APP
 ### Propósito
-Este repositorio contiene una aplicación Rails configurada para practicar técnicas de depuración en un entorno web. Incluye middleware personalizado para manejar errores y facilitar la depuración de vistas parciales, así como configuraciones específicas para el entorno de desarrollo.
+Este repositorio contiene una aplicación Rails CRUD sencilla con bootstrap y webpacker, configurada para practicar técnicas de depuración en un entorno web. Incluye algunos errores sencillos de depuración para que puedas practicar.
 
 ### URLs de prueba disponibles:
 
-http://localhost:3000 - Lista de usuarios
-http://localhost:3000/users/1 - Detalle de usuario
-http://localhost:3000/debug_error - Para probar manejo de errores
-http://localhost:3000/users?debug_partial=true - Para debugging en parciales
+http://localhost:3000 - Lista de mobs de minecraft
+http://localhost:3000/mobs/1 - Detalle de mob
+http://localhost:3000/mobs/debug_error - Para probar manejo de errores
+http://localhost:3000/mobs?debug_partial=true - Para debugging en parciales
 
 ### Preparación Inicial
 1. Clonar o crear la aplicación
-cd debugging_demo
+cd rails_app
 
 2. Instalar dependencias
 bundle install
@@ -48,7 +48,9 @@ bundle install
 3. Ejecutar setup de base de datos
 rails db:create db:migrate db:seed
 
-4. Iniciar servidor en una terminal
-rails server
+4. Iniciar app de rails
+bin/dev
 
-5. Abrir otra terminal para comandos adicionales
+5. Iniciar rails y webpack por separado
+rails server
+bin/webpack-dev-server
