@@ -1,6 +1,7 @@
 .vscode
 ruby/.vscode
 rails_app/tmp
+rails_app/public/cached_images
 rails_app/log
 rails_app/storage
 rails_app/node_modules

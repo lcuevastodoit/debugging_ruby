@@ -1,5 +1,6 @@
 require 'net/http'
 require 'uri'
+require 'digest'
 
 class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
@@ -14,6 +15,17 @@ class ApplicationController < ActionController::Base
       return head :forbidden
     end
 
+    # Generate a filename based on the URL
+    filename = generate_cached_filename(url)
+    cached_path = Rails.root.join('public', 'cached_images', filename)
+
+    # Check if image exists in cache
+    if File.exist?(cached_path)
+      Rails.logger.info "Serving cached image: #{filename}"
+      return send_file cached_path, disposition: 'inline'
+    end
+
+    # If not cached, download and cache the image
     begin
       uri = URI(url)
       http = Net::HTTP.new(uri.host, uri.port)
@@ -46,6 +58,9 @@ class ApplicationController < ActionController::Base
             return head :not_found
           end
         when Net::HTTPSuccess
+          # Save image to cache
+          save_to_cache(cached_path, response.body)
+          
           # Send the image data with proper content type
           send_data response.body,
                     type: response.content_type || 'image/png',
@@ -61,5 +76,36 @@ class ApplicationController < ActionController::Base
       Rails.logger.error "Image proxy error: #{e.message}"
       head :internal_server_error
     end
+  end
+
+  private
+
+  def generate_cached_filename(url)
+    # Extract original filename if possible, otherwise use hash
+    uri = URI(url)
+    original_name = File.basename(uri.path)
+    
+    if original_name.present? && original_name.include?('.')
+      # Use original filename with hash prefix to avoid conflicts
+      hash_prefix = Digest::MD5.hexdigest(url)[0..7]
+      "#{hash_prefix}_#{original_name}"
+    else
+      # Fallback to hash-based filename
+      "#{Digest::MD5.hexdigest(url)}.png"
+    end
+  end
+
+  def save_to_cache(file_path, content)
+    # Ensure the cached_images directory exists
+    FileUtils.mkdir_p(File.dirname(file_path))
+    
+    # Write the file
+    File.open(file_path, 'wb') do |file|
+      file.write(content)
+    end
+    
+    Rails.logger.info "Cached image saved: #{File.basename(file_path)}"
+  rescue => e
+    Rails.logger.error "Failed to cache image: #{e.message}"
   end
 end
