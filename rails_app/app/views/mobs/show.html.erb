@@ -1,13 +1,36 @@
 <div class="container mt-4">
   <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <h1 class="mb-0"><%= @mob.name %></h1>
+          <% if @wiki_info[:found] %>
+            <span class="badge bg-success">Wiki Info Available</span>
+          <% else %>
+            <span class="badge bg-secondary">Local Data Only</span>
+          <% end %>
         </div>
         <div class="card-body">
-          <p class="card-text lead"><%= @mob.description %></p>
-          
+          <!-- Local Description -->
+          <div class="mb-4">
+            <h5 class="text-muted">Local Description:</h5>
+            <p class="card-text"><%= @mob.description %></p>
+          </div>
+
+          <!-- Wiki Information -->
+          <% if @wiki_info[:found] %>
+            <div class="mb-4">
+              <h5 class="text-primary">
+                <i class="fas fa-external-link-alt"></i> 
+                Minecraft Wiki Information:
+              </h5>
+              <div class="alert alert-info">
+                <p class="mb-0"><%= @wiki_info[:extract] %></p>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Stats Row -->
           <div class="row mt-4">
             <div class="col-md-4 text-center">
               <div class="border rounded p-3 mb-3">
@@ -28,10 +51,50 @@
               </div>
             </div>
           </div>
+
+          <!-- Wiki Images -->
+          <% if @wiki_info[:images].present? %>
+            <div class="mt-4">
+              <h5 class="text-primary">
+                <i class="fas fa-images"></i> 
+                Wiki Images:
+              </h5>
+              <div class="row">
+                <% @wiki_info[:images].each do |image| %>
+                  <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card">
+                      <img src="<%= image[:url] %>" 
+                           class="card-img-top" 
+                           alt="<%= image[:title] %>"
+                           style="height: 150px; object-fit: cover;"
+                           onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}">
+                      <div class="card-body text-center p-2" style="display: none;">
+                        <small class="text-muted">Image not available</small>
+                      </div>
+                      <div class="card-footer p-2">
+                        <small class="text-muted"><%= truncate(image[:title], length: 20) %></small>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
         </div>
         <div class="card-footer">
           <%= link_to "← Back to Mobs", mobs_path, class: "btn btn-secondary" %>
           <%= link_to "Debug Error", debug_error_mobs_path, class: "btn btn-warning" %>
+          
+          <!-- Debug API URLs -->
+          <div class="btn-group ms-2" role="group">
+            <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+              Debug API
+            </button>
+            <ul class="dropdown-menu">
+              <li><%= link_to "Debug with Pry", mob_path(@mob, pry: true), class: "dropdown-item" %></li>
+              <li><%= link_to "Debug with Debugger", mob_path(@mob, debugger: true), class: "dropdown-item" %></li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

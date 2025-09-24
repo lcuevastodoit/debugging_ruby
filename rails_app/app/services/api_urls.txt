@@ -1,0 +1,4 @@
+https://minecraft.fandom.com/es/api.php?action=query&titles=Creeper&prop=extracts|images&format=json
+https://minecraft.fandom.com/es/wiki/Special:FilePath/Creeper1.png
+https://minecraft.fandom.com/es/wiki/Special:FilePath/Charged_Creeper.gif
+https://minecraft.fandom.com/es/wiki/Special:FilePath/Creeper_(fixed_shadows)_JE1.png
