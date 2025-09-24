@@ -4,7 +4,7 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h1 class="mb-0"><%= @mob.name %></h1>
-          <% if @wiki_info[:found] %>
+          <% if @wiki_info[:description] %>
             <span class="badge bg-success">Wiki Info Available</span>
           <% else %>
             <span class="badge bg-secondary">Local Data Only</span>
@@ -18,7 +18,7 @@
           </div>
 
           <!-- Wiki Description -->
-          <% if @wiki_info[:found] %>
+          <% if @wiki_info[:description] %>
             <div class="mb-4">
               <h5 class="text-primary">
                 <i class="fas fa-book-open"></i>
@@ -31,7 +31,7 @@
           <% end %>
 
           <!-- Additional Wiki Information -->
-          <% if @wiki_info[:found] && @wiki_info[:extract] != @wiki_info[:description] %>
+          <% if @wiki_info[:description] && @wiki_info[:extract] != @wiki_info[:description] %>
             <div class="mb-4">
               <h5 class="text-primary">
                 <i class="fas fa-external-link-alt"></i>
@@ -74,16 +74,13 @@
               </h5>
               <div class="row">
                 <% @wiki_info[:images].each do |image| %>
-                  <div class="col-md-3 col-sm-6 mb-3">
+                  <div class="col-md-3 col-sm-6 mb-3" id="card-<%= image.object_id %>">
                     <div class="card">
                       <img src="<%= image[:url] %>"
                            class="card-img-top"
                            alt="<%= image[:title] %>"
-                           style="height: 150px; object-fit: cover;"
-                           onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}">
-                      <div class="card-body text-center p-2" style="display: none;">
-                        <small class="text-muted">Image not available</small>
-                      </div>
+                           style="height: 300px; object-fit: contain; background-color: #f8f9fa;"
+                           onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){document.getElementById('card-<%= image.object_id %>').style.display='none';}">
                       <div class="card-footer p-2">
                         <small class="text-muted"><%= truncate(image[:title], length: 20) %></small>
                       </div>

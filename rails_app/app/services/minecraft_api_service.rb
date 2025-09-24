@@ -13,10 +13,7 @@ class MinecraftApiService
         action: 'query',
         titles: mob_name,
         prop: 'extracts|images',
-        format: 'json',
-        exintro: true,
-        explaintext: true,
-        exsectionformat: 'plain'
+        format: 'json'
       }
 
       url = build_url(BASE_URL, params)
