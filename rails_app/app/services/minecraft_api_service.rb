@@ -96,72 +96,22 @@ class MinecraftApiService
                .map do |img|
                  filename = img['title'].gsub('Archivo:', '').gsub('File:', '').gsub(' ', '_')
                  original_url = "#{IMAGE_BASE_URL}#{URI.encode_www_form_component(filename)}"
-                 
-                 # Get the real image URL by following redirects
-                 real_url = get_real_image_url(original_url) || original_url
+                 proxy_url = "/image_proxy?url=#{URI.encode_www_form_component(original_url)}"
                  
                  # Debug logging
                  Rails.logger.info "Image processing: #{filename}"
                  Rails.logger.info "  Original: #{original_url}"
-                 Rails.logger.info "  Real URL: #{real_url}"
+                 Rails.logger.info "  Using proxy: #{proxy_url}"
                  
                  {
                    title: filename,
-                   url: real_url,
+                   url: proxy_url, # Always use proxy URL
                    original_url: original_url,
-                   proxy_url: "/image_proxy?url=#{URI.encode_www_form_component(original_url)}"
+                   proxy_url: proxy_url
                  }
                end
   end
   
-  def self.get_real_image_url(url)
-    begin
-      uri = URI(url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      http.read_timeout = 10 # Add timeout
-      
-      request = Net::HTTP::Get.new(uri)
-      request['User-Agent'] = 'Mozilla/5.0 (compatible; RailsDebuggingApp/1.0)'
-      request['Accept'] = 'image/*'
-      
-      # Follow up to 3 redirects
-      3.times do
-        response = http.request(request)
-        
-        case response
-        when Net::HTTPRedirection
-          location = response['location']
-          if location
-            # Handle relative redirects
-            if location.start_with?('/')
-              location = "#{uri.scheme}://#{uri.host}#{location}"
-            end
-            uri = URI(location)
-            http = Net::HTTP.new(uri.host, uri.port)
-            http.use_ssl = (uri.scheme == 'https')
-            http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-            http.read_timeout = 10
-            request = Net::HTTP::Get.new(uri)
-            request['User-Agent'] = 'Mozilla/5.0 (compatible; RailsDebuggingApp/1.0)'
-            request['Accept'] = 'image/*'
-          else
-            break
-          end
-        when Net::HTTPSuccess
-          return uri.to_s # Return the final URL
-        else
-          break
-        end
-      end
-      
-      nil
-    rescue => e
-      Rails.logger.error "Error getting real image URL for #{url}: #{e.message}"
-      nil
-    end
-  end
   
   def self.default_mob_info(mob_name)
     {
