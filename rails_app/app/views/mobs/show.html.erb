@@ -76,11 +76,12 @@
                 <% @wiki_info[:images].each do |image| %>
                   <div class="col-md-3 col-sm-6 mb-3" id="card-<%= image.object_id %>">
                     <div class="card">
-                      <img src="<%= image[:url] %>"
-                           class="card-img-top"
-                           alt="<%= image[:title] %>"
-                           style="height: 300px; object-fit: contain; background-color: #f8f9fa;"
-                           onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){document.getElementById('card-<%= image.object_id %>').style.display='none';}">
+                      <div class="d-flex align-items-center justify-content-center" style="height: 300px; background-color: #f8f9fa;">
+                        <img src="<%= image[:url] %>"
+                             alt="<%= image[:title] %>"
+                             style="max-height: 300px; max-width: 100%; object-fit: contain;"
+                             onerror="this.src='<%= image[:proxy_url] %>'; this.onerror=function(){document.getElementById('card-<%= image.object_id %>').style.display='none';}">
+                      </div>
                       <div class="card-footer p-2">
                         <small class="text-muted"><%= truncate(image[:title], length: 20) %></small>
                       </div>
